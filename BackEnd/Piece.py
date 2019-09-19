@@ -1,8 +1,8 @@
 class Piece:
 
-    def __init__(self, board_location, pixel_location):
+    def __init__(self, board_location, colour):
         self.board_location = board_location
-        self.pixel_location = pixel_location
+        self.colour = colour
         self.captured = False
         self.out = False
 

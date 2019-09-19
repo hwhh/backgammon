@@ -1,79 +1,34 @@
-import pygame
+from BackEnd.Piece import Piece
+from FrontEnd.GUI import run_game
 
-pygame.init()
-res = (1200, 824)
-display = pygame.display.set_mode(res, pygame.RESIZABLE)
+# 12 cols, 30 rows
+# potentially make 12 rows and stack counters???
 
-background = pygame.transform.smoothscale(pygame.image.load(r'./backgammon/Assets/board.png').convert(), res)
-a = 0
-clock = pygame.time.Clock()
+"""
+  | 0 1 2 3 4 5 6 7 8 9 10 11
+ ----------------------------
+0 | b       w   w           b
+1 | b       w   w           b
+2 | b       w   w 
+3 | b           w
+4 | b           w
 
-display.blit(background, (0, 0))
-pygame.display.update()
-while True:
-    clock.tick(60)
-    for event in pygame.event.get():
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            if event.button == 1:
-                print("You pressed the left mouse button")
+5 | w           b       
+6 | w           b       
+7 | w       b   b
+8 | w       b   b           w
+9 | w       b   b           w
 
+"""
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    # rect = (a, 8, 339, 205)
-    # display.blit(background, rect, rect)  # draw the needed part of the background
-    # pygame.display.update(rect)  # update the changed area
-    # a += 10
-    # rect = (a, 8, 339, 205)
-    # pygame.draw.rect(display, (255, 0, 0), rect)
-    # pygame.display.update(rect)  # update the changed area
-
-# e
-#
-# # initialize game engine
-# pygame.init()
-#
-# clock_tick_rate = 2
-#
-# screen = pygame.display.set_mode((1200, 824))
-#
-# dead = False
-# clock = pygame.time.Clock()
-#
-#
-# background_image = pygame.image.load('./backgammon/Assets/board.png').convert()
-#
-# while dead == False:
-#
-#     # if pygame.mouse.get_pressed()[0]:
-#     #     coords = pygame.mouse.get_pos()
-#     #     print(coords)
-#
-#     for event in pygame.event.get():
-#
-#         # print(event)
-#
-# if event.type == pygame.MOUSEBUTTONDOWN:
-#     if event.button == 1:
-#         print("You pressed the left mouse button")
-#
-#         if event.type == pygame.QUIT:
-#             dead = True
-#
-#     screen.blit(background_image, [0, 0])
-#
-#     pygame.display.flip()
-#     # clock.tick(clock_tick_rate)
+if __name__ == '__main__':
+    pieces = []
+    pieces.extend([Piece(loc, 'w') for loc in zip(range(5), [0] * 5)])
+    pieces.extend([Piece(loc, 'b') for loc in zip(range(5, 10), [0] * 5)])
+    pieces.extend([Piece(loc, 'b') for loc in zip(range(3), [4] * 3)])
+    pieces.extend([Piece(loc, 'w') for loc in zip(range(7, 10), [4] * 3)])
+    pieces.extend([Piece(loc, 'b') for loc in zip(range(5), [6] * 5)])
+    pieces.extend([Piece(loc, 'w') for loc in zip(range(5, 10), [6] * 5)])
+    pieces.extend([Piece(loc, 'w') for loc in zip(range(2), [11] * 2)])
+    pieces.extend([Piece(loc, 'b') for loc in zip(range(8, 10), [11] * 2)])
+    run_game(pieces)
