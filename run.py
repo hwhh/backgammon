@@ -1,3 +1,4 @@
+from BackEnd.Board import Board
 from BackEnd.Piece import Piece
 from FrontEnd.GUI import run_game
 
@@ -23,12 +24,17 @@ from FrontEnd.GUI import run_game
 
 if __name__ == '__main__':
     pieces = []
-    pieces.extend([Piece(loc, 'w') for loc in zip(range(5), [0] * 5)])
-    pieces.extend([Piece(loc, 'b') for loc in zip(range(5, 10), [0] * 5)])
-    pieces.extend([Piece(loc, 'b') for loc in zip(range(3), [4] * 3)])
-    pieces.extend([Piece(loc, 'w') for loc in zip(range(7, 10), [4] * 3)])
-    pieces.extend([Piece(loc, 'b') for loc in zip(range(5), [6] * 5)])
-    pieces.extend([Piece(loc, 'w') for loc in zip(range(5, 10), [6] * 5)])
-    pieces.extend([Piece(loc, 'w') for loc in zip(range(2), [11] * 2)])
-    pieces.extend([Piece(loc, 'b') for loc in zip(range(8, 10), [11] * 2)])
-    run_game(pieces)
+    pieces.extend([Piece(loc, 'w') for loc in zip([0] * 5, range(5))])
+    pieces.extend([Piece(loc, 'b') for loc in zip([0] * 5, range(5, 10))][::-1])
+
+    pieces.extend([Piece(loc, 'b') for loc in zip([4] * 3, range(3))])
+    pieces.extend([Piece(loc, 'w') for loc in zip([4] * 3, range(7, 10))][::-1])
+
+    pieces.extend([Piece(loc, 'b') for loc in zip([6] * 5, range(5))])
+    pieces.extend([Piece(loc, 'w') for loc in zip([6] * 5, range(5, 10))][::-1])
+
+    pieces.extend([Piece(loc, 'w') for loc in zip([11] * 2, range(2), )])
+    pieces.extend([Piece(loc, 'b') for loc in zip([11] * 2, range(8, 10))][::-1])
+
+    board = Board(pieces)
+    run_game(board)
