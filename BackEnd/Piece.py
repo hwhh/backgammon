@@ -10,6 +10,9 @@ class Piece:
     def __eq__(self, other):
         return self.loc[0] == other.loc[0] and self.loc[1] == other.loc[1]
 
+    def __str__(self):
+        return str(self.loc) + " " + self.colour
+
     def get_available_moves(self, dice):
         pass
 

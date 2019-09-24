@@ -8,11 +8,7 @@ class Board:
     def __init__(self, pieces):
         self.pieces = [[] for i in range(24)]
         for piece in pieces:
-            index = piece.loc[0]
-            if piece.loc[1] >= 5:
-                self.pieces[(index + 12)].append(piece)
-            else:
-                self.pieces[index].append(piece)
+            self.pieces[piece.loc[0]].append(piece)
 
     def get_pieces(self):
         return [piece for piece in itertools.chain.from_iterable(self.pieces)]
