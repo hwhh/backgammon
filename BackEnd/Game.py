@@ -1,7 +1,10 @@
 class Game:
 
     def __init__(self):
-        pass
+        self.turn = None
+
+    def get_turn(self, piece):
+        return piece.colour == self.turn
 
     def game_over(self):
         return False
