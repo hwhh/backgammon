@@ -37,20 +37,16 @@ def pos_to_screen(board_location, distance):
 
 
 """
-0,0     --> 1131, 771
-0,1     --> 1127, 717
-5,4     --> 674, 561
-
-
-11, 4   --> 71, 556
-12, 1   --> 78, 106
-23, 4   --> 78, 106
+0 -> 23
+1 -> 22
 
 
 
-5 - 11310 
 
-abs((loc*90) - x)
+
+
+11 -> 12
+
 
 """
 
@@ -60,32 +56,16 @@ def screen_to_pos(event, board):
         return "Dice Rolled"
     else:
         x = None
-        # (1120 - (5*90))+25
-        # (1120 - (5*90))-25
-        if 1095 <= event.pos[0] <= 1145:
-            x = 0
-        if 1005 <= event.pos[0] <= 1055:
-            x = 1
-        if 915 <= event.pos[0] <= 965:
-            x = 2
-        if 825 <= event.pos[0] <= 875:
-            x = 3
-        if 735 <= event.pos[0] <= 785:
-            x = 4
-        if 645 <= event.pos[0] <= 695:
-            x = 5
-        if 500 <= event.pos[0] <= 550:
-            x = 6
-        if 410 <= event.pos[0] <= 460:
-            x = 7
-        if 320 <= event.pos[0] <= 370:
-            x = 8
-        if 230 <= event.pos[0] <= 280:
-            x = 9
-        if 140 <= event.pos[0] <= 190:
-            x = 10
-        if 50 <= event.pos[0] <= 100:
-            x = 11
+        for i in range(12):
+            if i < 6 and (1120 - (i * 90)) - 25 <= event.pos[0] <= (1120 - (i * 90)) + 25:
+                x = i
+                break
+            elif i >= 6 and (1065 - (i * 90)) - 25 <= event.pos[0] <= (1065 - (i * 90)) + 25:
+                x = i
+                break
+
+        if event.pos[1] <= 400:
+            x = 23 - x
 
         if x is not None:
             dis = calculate_spacing(board, x)
@@ -110,7 +90,7 @@ def run_game(board):
     res = (1200, 824)
     display = pygame.display.set_mode(res)
 
-    background = pygame.transform.smoothscale(pygame.image.load('./backgammon/Assets/board.png').convert(), res)
+    background = pygame.transform.smoothscale(pygame.image.load('./Assets/board.png').convert(), res)
 
     for piece in board.get_pieces():
         location = pos_to_screen(piece.loc, calculate_spacing(board, piece.loc[0]))
