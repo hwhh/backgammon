@@ -24,12 +24,12 @@ class Board:
 
     def get_destinations(self, piece, die):
         dest1, dest2, dest3, dest4 = None, None, None, None
-        if piece.colour == 'b':
+        if piece.colour == 'w':
             dest1, dest2 = piece.loc[0] - die[0], piece.loc[0] - die[1]
             dest3 = piece.loc[0] - (die[0] + die[1])
             if die[0] == die[1]:
                 dest4 = piece.loc[0] - (die[0] * 4)
-        elif piece.colour == 'w':
+        elif piece.colour == 'b':
             dest1, dest2 = piece.loc[0] + die[0], piece.loc[0] + die[1]
             dest3 = piece.loc[0] + (die[0] + die[1])
             if die[0] == die[1]:
@@ -55,7 +55,7 @@ class Board:
             if dest4 is not None and 0 <= dest4 <= 23 and (
                     len(self.pieces[dest4]) <= 1 or (self.pieces[dest4][-1]).colour == piece.colour):
                 available_moves.append(dest4)
-
+        print(list(set(available_moves)))
         return list(set(available_moves))
 
     def bear_off(self):

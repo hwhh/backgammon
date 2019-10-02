@@ -25,7 +25,8 @@ from FrontEnd.GUI import run_game
 if __name__ == '__main__':
     pieces = []
     pieces.extend([Piece(loc, 'w') for loc in zip([23] * 2, range(2), )])
-    pieces.extend([Piece(loc, 'b') for loc in zip([0] * 2, range(2))][::-1])
+
+    pieces.extend([Piece(loc, 'b') for loc in zip([0] * 2, range(2))][::-1])  # 1143 - 1098
 
     pieces.extend([Piece(loc, 'w') for loc in zip([5] * 5, range(5))])
     pieces.extend([Piece(loc, 'b') for loc in zip([18] * 5, range(5))][::-1])

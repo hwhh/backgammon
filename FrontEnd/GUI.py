@@ -19,21 +19,12 @@ def calculate_spacing(board, x):
 def pos_to_screen(board_location, distance):
     if board_location[0] < 6:
         x, y = abs((board_location[0] * 90) - 1120), (765 - (distance * (board_location[1])))
-
-        # x, y = (-15 + (90 * (board_location[0] + 1))), (distance * (board_location[1] + 1))
-
     elif 6 <= board_location[0] < 12:
         x, y = abs((board_location[0] * 90) - 1065), (765 - (distance * (board_location[1])))
-
-        # x, y = (45 + (90 * (board_location[0] + 1))), (distance * (board_location[1] + 1))
     elif 12 <= board_location[0] < 17:
         x, y = abs((abs(board_location[0] - 23) * 90) - 1065), (distance * (board_location[1] + 1))
-        # x, y = (-15 + (90 * (board_location[0] - 11))), (765 - (distance * (board_location[1])))
     else:
         x, y = abs((abs(board_location[0] - 23) * 90) - 1120), (distance * (board_location[1] + 1))
-
-        # x, y = 0, 0
-        # x, y = (45 + (90 * (board_location[0] - 11))), (765 - (distance * (board_location[1])))
 
     # TODO draw number of counters stacked at this point
     # TODO fix bug with distance shifting the counter off the edge of board
@@ -68,20 +59,40 @@ def screen_to_pos(event, board):
     if 575 <= event.pos[0] <= 622 and 790 <= event.pos[1] <= 820:
         return "Dice Rolled"
     else:
-        if event.pos[0] < 575 and event.pos[1] > 410:
-            x = math.floor((event.pos[0] / 90)) + 11
-        elif event.pos[0] < 575 and event.pos[1] <= 410:
-            x = math.floor((event.pos[0] / 90))
-        elif event.pos[0] >= 575 and event.pos[1] > 410:
-            x = math.floor(((event.pos[0] - 80) / 90)) + 12
-        else:
-            x = math.floor(((event.pos[0] - 80) / 90))
+        x = None
+        # (1120 - (5*90))+25
+        # (1120 - (5*90))-25
+        if 1095 <= event.pos[0] <= 1145:
+            x = 0
+        if 1005 <= event.pos[0] <= 1055:
+            x = 1
+        if 915 <= event.pos[0] <= 965:
+            x = 2
+        if 825 <= event.pos[0] <= 875:
+            x = 3
+        if 735 <= event.pos[0] <= 785:
+            x = 4
+        if 645 <= event.pos[0] <= 695:
+            x = 5
+        if 500 <= event.pos[0] <= 550:
+            x = 6
+        if 410 <= event.pos[0] <= 460:
+            x = 7
+        if 320 <= event.pos[0] <= 370:
+            x = 8
+        if 230 <= event.pos[0] <= 280:
+            x = 9
+        if 140 <= event.pos[0] <= 190:
+            x = 10
+        if 50 <= event.pos[0] <= 100:
+            x = 11
 
-        dis = calculate_spacing(board, x)
-        if x <= 11 and event.pos[1] < 410:
-            return (dis * len(board.pieces[x]) - 25) <= event.pos[1] <= (dis * len(board.pieces[x]) + 25), x
-        else:
-            return (790 - (dis * len(board.pieces[x]))) <= event.pos[1] <= (840 - (dis * len(board.pieces[x]))), x
+        if x is not None:
+            dis = calculate_spacing(board, x)
+            if x <= 11 and event.pos[1] < 410:
+                return (dis * len(board.pieces[x]) - 25) <= event.pos[1] <= (dis * len(board.pieces[x]) + 25), x
+            else:
+                return (790 - (dis * len(board.pieces[x]))) <= event.pos[1] <= (840 - (dis * len(board.pieces[x]))), x
 
 
 def roll_dice(display):
@@ -123,11 +134,12 @@ def run_game(board):
                 if event.button == 1:
                     index = screen_to_pos(event, board)
                     print(str(event.pos[0]) + ", " + str(event.pos[1]))
+                    print(index)
                     if index == "Dice Rolled":
                         die1, die2 = roll_dice(display)
 
-                    # elif die1 is not None and die2 is not None and index[0]:
-                    #     print(board.get_available_moves(board.pieces[index[1]][-1], (die1, die2)))
+                    elif die1 is not None and die2 is not None and index[0]:
+                        print(board.get_available_moves(board.pieces[index[1]][-1], (die1, die2)))
 
             if event.type == pygame.QUIT:
                 run = False
