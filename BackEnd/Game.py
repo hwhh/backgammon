@@ -1,3 +1,6 @@
+import random
+
+
 class Game:
 
     def __init__(self):
@@ -13,4 +16,4 @@ class Game:
         pass
 
     def roll_dice(self):
-        pass
+        die1, die2 = random.randint(1, 7), random.randint(1, 7)

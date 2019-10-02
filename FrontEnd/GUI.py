@@ -51,38 +51,45 @@ def pos_to_screen(board_location, distance):
 """
 
 
-def screen_to_pos(event, board):
-    if 575 <= event.pos[0] <= 622 and 790 <= event.pos[1] <= 820:
-        return "Dice Rolled"
+def dice_rolled(event):
+    return 575 <= event.pos[0] <= 622 and 790 <= event.pos[1] <= 820
+
+
+def piece_selected(board, x, event):
+    if x is None:
+        return False
     else:
-        x = None
-        for i in range(12):
-            if i < 6 and (1120 - (i * 90)) - 25 <= event.pos[0] <= (1120 - (i * 90)) + 25:
-                x = i
-                break
-            elif i >= 6 and (1065 - (i * 90)) - 25 <= event.pos[0] <= (1065 - (i * 90)) + 25:
-                x = i
-                break
-
-        if event.pos[1] <= 400:
-            x = 23 - x
-
-        if x is not None:
-            dis = calculate_spacing(board, x)
-            if x <= 11 and event.pos[1] < 410:
-                return (dis * len(board.pieces[x]) - 25) <= event.pos[1] <= (dis * len(board.pieces[x]) + 25), x
-            else:
-                return (790 - (dis * len(board.pieces[x]))) <= event.pos[1] <= (840 - (dis * len(board.pieces[x]))), x
+        dis = calculate_spacing(board, x)
+        if x > 11 and event.pos[1] < 410:
+            return (dis * len(board.pieces[x]) - 25) <= event.pos[1] <= (dis * len(board.pieces[x]) + 25)
+        else:
+            return (790 - (dis * len(board.pieces[x]))) <= event.pos[1] <= (840 - (dis * len(board.pieces[x])))
 
 
-def roll_dice(display):
-    die1, die2 = random.choice([1, 2, 3, 4, 5, 6]), random.choice([1, 2, 3, 4, 5, 6])
+def screen_to_pos(event):
+    x = None
+    for i in range(12):
+        if i < 6 and (1120 - (i * 90)) - 25 <= event.pos[0] <= (1120 - (i * 90)) + 25:
+            x = i
+            break
+        elif i >= 6 and (1065 - (i * 90)) - 25 <= event.pos[0] <= (1065 - (i * 90)) + 25:
+            x = i
+            break
+    if event.pos[1] <= 400:
+        x = 23 - x
+    return x
+
+
+def display_dice(display, die1, die2):
+
     font = pygame.font.SysFont('Arial', 25)
     pygame.draw.rect(display, WHITE, (540, 420, 40, 40))
     display.blit(font.render(str(die1), True, (0, 0, 0)), (555, 435))
     pygame.draw.rect(display, WHITE, (600, 420, 40, 40))
     display.blit(font.render(str(die2), True, (0, 0, 0)), (615, 435))
     return die1, die2
+
+
 
 
 def run_game(board):
@@ -111,15 +118,14 @@ def run_game(board):
         pygame.display.update()
         for event in pygame.event.get():
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:
-                    index = screen_to_pos(event, board)
-                    print(str(event.pos[0]) + ", " + str(event.pos[1]))
-                    print(index)
-                    if index == "Dice Rolled":
-                        die1, die2 = roll_dice(display)
-
-                    elif die1 is not None and die2 is not None and index[0]:
-                        print(board.get_available_moves(board.pieces[index[1]][-1], (die1, die2)))
+                if event.button == 1 and dice_rolled(event):
+                    die1, die2 = roll_dice(display)
+                elif event.button == 1:
+                    index = screen_to_pos(event)
+                    top_piece_selected = piece_selected(board, index, event)
+                    print(str(index) + ', ' + str(top_piece_selected))
+                    if top_piece_selected and die1 is not None and die2 is not None:
+                        print(board.get_available_moves(board.pieces[index][-1], (die1, die2)))
 
             if event.type == pygame.QUIT:
                 run = False
