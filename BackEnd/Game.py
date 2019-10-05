@@ -17,6 +17,10 @@ class State(enum.Enum):
     moved = 4
 
 
+# Not Rolled -> rolled  -> moved
+#                       -> blocked -> not rolled
+
+
 class Game:
 
     def __init__(self, front_end):
@@ -42,9 +46,12 @@ class Game:
             time.sleep(0.5)
             event = self.front_end.get_event()
 
-            if event == "Rolled Dice":
+            if event == "Rolled Dice" and self.state.not_rolled:
                 die1, die2 = self.roll_dice()
+
                 self.front_end.display_dice(die1, die2)
+
+                # Initial dice roll ro see who goes first
                 if self.state == State.init:
                     if die1 > die2:
                         self.turn = 'w'
@@ -52,10 +59,6 @@ class Game:
                     elif die1 < die2:
                         self.turn = 'd'
                         self.state = State.rolled
-
-
-
-
 
     def get_turn(self, piece):
         return piece.colour == self.turn
