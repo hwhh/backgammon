@@ -83,7 +83,6 @@ class GUI:
 
     # def initialise_display(self):
 
-
     def display_dice(self, die1, die2):
         pygame.draw.rect(self.display, WHITE, (540, 420, 40, 40))
         self.display.blit(pygame.font.SysFont('Arial', 25).render(str(die1), True, (0, 0, 0)), (555, 435))
@@ -92,14 +91,15 @@ class GUI:
         pygame.display.update()
 
     def display_pieces(self, board):
-        self.display.blit(self.background, (0, 0))
-        pygame.draw.rect(self.display, WHITE, (575, 790, 47, 30))
 
         for piece in board.get_pieces():
             location = self.pos_to_screen(piece.loc, self.calculate_spacing(piece.loc[0], board))
             pygame.draw.circle(self.background, WOOD if piece.colour == 'w' else BLACK, location, 25)
-        self.display.blit(pygame.font.SysFont('Arial', 25).render('Roll', True, (0, 0, 0)), (583, 800))
+
         self.display.blit(self.background, (0, 0))
+        pygame.draw.rect(self.display, WHITE, (575, 790, 47, 30))
+        self.display.blit(pygame.font.SysFont('Arial', 25).render('Roll', True, (0, 0, 0)), (583, 800))
+
         pygame.display.update()
 
     def get_event(self):
@@ -113,7 +113,6 @@ class GUI:
             for event in pygame.event.get():
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1 and self.dice_rolled(event):
-                        print("Rolled")
                         self.event = "Rolled Dice"
 
                     elif event.button == 1:

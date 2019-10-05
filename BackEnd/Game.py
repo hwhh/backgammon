@@ -9,8 +9,6 @@ from BackEnd.Piece import Piece
 from FrontEnd.GUI import GUI
 
 
-
-
 class State(enum.Enum):
     init = 0
     not_rolled = 1
@@ -41,10 +39,23 @@ class Game:
     def run(self):
         self.front_end.display_pieces(self.board)
         while not self.game_over():
+            time.sleep(0.5)
             event = self.front_end.get_event()
-            if event is "Rolled Dice" and self.state is not State.rolled:
-                self.front_end.display_dice(self.roll_dice())
-                self.state = State.rolled
+
+            if event == "Rolled Dice":
+                die1, die2 = self.roll_dice()
+                self.front_end.display_dice(die1, die2)
+                if self.state == State.init:
+                    if die1 > die2:
+                        self.turn = 'w'
+                        self.state = State.rolled
+                    elif die1 < die2:
+                        self.turn = 'd'
+                        self.state = State.rolled
+
+
+
+
 
     def get_turn(self, piece):
         return piece.colour == self.turn
@@ -57,5 +68,5 @@ class Game:
         pass
 
     def roll_dice(self):
-        self.current_die = random.randint(1, 7), random.randint(1, 7)
+        self.current_die = random.randint(1, 6), random.randint(1, 6)
         return self.current_die
