@@ -6,7 +6,7 @@ from pygame.threads import Thread
 
 from BackEnd.Board import Board
 from BackEnd.Piece import Piece
-from FrontEnd.GUI import GUI
+from FrontEnd.GUI import GUI, Action
 
 
 class State(enum.Enum):
@@ -17,28 +17,44 @@ class State(enum.Enum):
     moved = 4
 
 
-# Not Rolled -> rolled  -> moved
-#                       -> blocked -> not rolled
-
-
 class Game:
 
     def __init__(self, front_end):
-        self.selected_piece = None
+        self.board = Board()
+        self.front_end = front_end
         self.state = State.init
         self.turn = None
-        self.front_end = front_end
-        self.current_die = None, None
-        pieces = []
-        pieces.extend([Piece(loc, 'w') for loc in zip([23] * 2, range(2), )])
-        pieces.extend([Piece(loc, 'b') for loc in zip([0] * 2, range(2))][::-1])  # 1143 - 1098
-        pieces.extend([Piece(loc, 'w') for loc in zip([5] * 5, range(5))])
-        pieces.extend([Piece(loc, 'b') for loc in zip([18] * 5, range(5))][::-1])
-        pieces.extend([Piece(loc, 'b') for loc in zip([16] * 3, range(3))])
-        pieces.extend([Piece(loc, 'w') for loc in zip([7] * 3, range(3))][::-1])
-        pieces.extend([Piece(loc, 'b') for loc in zip([11] * 5, range(5))])
-        pieces.extend([Piece(loc, 'w') for loc in zip([12] * 5, range(5))][::-1])
-        self.board = Board(pieces)
+        self.selected_piece = None
+        self.current_die = []
+        self.history = []
+
+    def transition_function(self, state, action, *args):
+        # Initial state
+        if state == State.init and action == Action.roll:
+            if args[0] > args[1]:
+                self.turn = 'w'
+                return State.rolled
+            elif args[0] < args[1]:
+                self.turn = 'd'
+                return State.rolled
+
+        # State rolling dice
+        if state == State.not_rolled and action == Action.roll:
+            self.roll_dice()
+            available_moves = self.board.get_all_available_moves(self.turn, (args[0], args[1]))
+            if len(available_moves) == 0:
+                self.change_turn()
+                return State.not_rolled
+            return State.rolled
+
+        if state == State.rolled and action == Action.select:
+            if self.board.pieces[args[0]][-1].colour == self.turn:
+                pass
+
+        if state == State.moved:
+            pass
+
+        return state
 
     def run(self):
         self.front_end.display_pieces(self.board)
@@ -46,30 +62,21 @@ class Game:
             time.sleep(0.5)
             event = self.front_end.get_event()
 
-            if event == "Rolled Dice" and self.state.not_rolled:
-                die1, die2 = self.roll_dice()
-
-                self.front_end.display_dice(die1, die2)
-
-                # Initial dice roll ro see who goes first
-                if self.state == State.init:
-                    if die1 > die2:
-                        self.turn = 'w'
-                        self.state = State.rolled
-                    elif die1 < die2:
-                        self.turn = 'd'
-                        self.state = State.rolled
-
-    def get_turn(self, piece):
-        return piece.colour == self.turn
+    def get_turn(self):
+        return self.turn
 
     def game_over(self):
-        # self.front_end.set_playing(False)
-        return False
+        return self.board.white_bared_off == 15 or self.board.black_bared_off == 15
 
     def change_turn(self):
-        pass
+        if self.turn == 'w':
+            self.turn = 'b'
+        else:
+            self.turn = 'w'
 
     def roll_dice(self):
-        self.current_die = random.randint(1, 6), random.randint(1, 6)
-        return self.current_die
+        die = (random.randint(1, 6), random.randint(1, 6))
+        if die[0] == die[1]:
+            self.current_die = [die[0] * 4]
+        else:
+            self.current_die = [die[0], die[1]]

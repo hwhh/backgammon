@@ -13,9 +13,6 @@ class Piece:
     def __str__(self):
         return str(self.loc) + " " + self.colour
 
-    def get_available_moves(self, dice):
-        pass
-
     def captured(self):
         return self.captured
 

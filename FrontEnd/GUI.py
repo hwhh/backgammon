@@ -10,6 +10,12 @@ WOOD = (200, 200, 150)
 BLACK = (0, 0, 0)
 
 
+class Action(enum.Enum):
+    roll = 0
+    select = 1
+    move = 2
+
+
 class GUI:
 
     def __init__(self):
@@ -95,7 +101,7 @@ class GUI:
         for piece in board.get_pieces():
             location = self.pos_to_screen(piece.loc, self.calculate_spacing(piece.loc[0], board))
             pygame.draw.circle(self.background, WOOD if piece.colour == 'w' else BLACK, location, 25)
-
+        # TODO bug where roll button has to be displayed here
         self.display.blit(self.background, (0, 0))
         pygame.draw.rect(self.display, WHITE, (575, 790, 47, 30))
         self.display.blit(pygame.font.SysFont('Arial', 25).render('Roll', True, (0, 0, 0)), (583, 800))

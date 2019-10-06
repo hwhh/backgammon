@@ -1,12 +1,28 @@
 import itertools
 
+from BackEnd.Piece import Piece
+
 
 class Board:
 
     # A list of stacks
 
-    def __init__(self, pieces):
-        self.pieces = [[] for i in range(24)]
+    def __init__(self):
+        self.pieces = [[] for _ in range(24)]
+        self.black_bared_off = 0
+        self.white_bared_off = 0
+        self.initialise_board()
+
+    def initialise_board(self):
+        pieces = []
+        pieces.extend([Piece(loc, 'w') for loc in zip([23] * 2, range(2))])
+        pieces.extend([Piece(loc, 'b') for loc in zip([0] * 2, range(2))][::-1])  # 1143 - 1098
+        pieces.extend([Piece(loc, 'w') for loc in zip([5] * 5, range(5))])
+        pieces.extend([Piece(loc, 'b') for loc in zip([18] * 5, range(5))][::-1])
+        pieces.extend([Piece(loc, 'b') for loc in zip([16] * 3, range(3))])
+        pieces.extend([Piece(loc, 'w') for loc in zip([7] * 3, range(3))][::-1])
+        pieces.extend([Piece(loc, 'b') for loc in zip([11] * 5, range(5))])
+        pieces.extend([Piece(loc, 'w') for loc in zip([12] * 5, range(5))][::-1])
         for piece in pieces:
             self.pieces[piece.loc[0]].append(piece)
 
@@ -55,8 +71,14 @@ class Board:
             if dest4 is not None and 0 <= dest4 <= 23 and (
                     len(self.pieces[dest4]) <= 1 or (self.pieces[dest4][-1]).colour == piece.colour):
                 available_moves.append(dest4)
-        print(list(set(available_moves)))
         return list(set(available_moves))
+
+    def get_all_available_moves(self, colour, die):
+        all_available_moves = []
+        for col in self.pieces:
+            if len(col) > 0 and col[-1].colour == colour:
+                all_available_moves.extend(self.get_available_moves(col[-1], die))
+        return all_available_moves
 
     def bear_off(self):
         pass
