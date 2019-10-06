@@ -49,10 +49,14 @@ class Game:
 
         if state == State.rolled and action == Action.select:
             if self.board.pieces[args[0]][-1].colour == self.turn:
-                pass
+                pass  # return available moves
 
+        # args[0] = dice1  args[1] = dice2  args[2] = piece args[3] = dest
         if state == State.moved:
-            pass
+            if args[3] in self.board.get_available_moves(args[2], (args[0], args[1])):
+                # args[3].move()
+                self.current_die.remove()
+                pass
 
         return state
 
