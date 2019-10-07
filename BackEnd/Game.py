@@ -38,7 +38,7 @@ class Game:
                 self.turn = 'd'
                 return State.rolled
 
-        # State rolling dice
+        # State rolling dice need to return the dice
         if state == State.not_rolled and action == Action.roll:
             self.roll_dice()
             available_moves = self.board.get_all_available_moves(self.turn, (args[0], args[1]))
