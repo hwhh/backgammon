@@ -64,7 +64,6 @@ class Game:
 
         return state
 
-
     def moves_available(self):
         return
 
