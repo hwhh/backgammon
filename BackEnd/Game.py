@@ -49,16 +49,24 @@ class Game:
 
         if state == State.rolled and action == Action.select:
             if self.board.pieces[args[0]][-1].colour == self.turn:
-                pass  # return available moves
+                return State.selected
 
-        # args[0] = dice1  args[1] = dice2  args[2] = piece args[3] = dest
-        if state == State.moved:
-            if args[3] in self.board.get_available_moves(args[2], (args[0], args[1])):
-                # args[3].move()
-                self.current_die.remove()
-                pass
+        # args[0] = piece args[1] = dest
+        if state == State.selected and Action == Action.move:
+            # available_moves = self.board.get_all_available_moves(self.turn, self.current_die)
+            if args[1] in self.board.get_available_moves(args[0], self.current_die):
+                self.current_die.remove(abs(args[0].loc[0] - args[1]))
+                if len(self.current_die) == 0 or not self.moves_available():
+                    self.change_turn()
+                    return State.not_rolled
+                else:
+                    return State.rolled
 
         return state
+
+
+    def moves_available(self):
+        return
 
     def run(self):
         self.front_end.display_pieces(self.board)
@@ -80,7 +88,4 @@ class Game:
 
     def roll_dice(self):
         die = (random.randint(1, 6), random.randint(1, 6))
-        if die[0] == die[1]:
-            self.current_die = [die[0] * 4]
-        else:
-            self.current_die = [die[0], die[1]]
+        self.current_die = [die[0], die[1]]
