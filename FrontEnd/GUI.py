@@ -16,11 +16,14 @@ class Action(enum.Enum):
     move = 2
 
 
+# TODO after the event has taken place and board is updated hand back the board
+
 class GUI:
 
     def __init__(self):
         pygame.init()
         res = (1200, 824)
+        self.board = None
         self.action = None
         self.playing = True
         self.extras = {}
@@ -73,20 +76,31 @@ class GUI:
         else:
             return int(round(50 - (len(board.pieces[x]) * 1.5)))
 
-    def piece_selected(self, x, event, board):
-        if x is None:
-            return False
-        else:
-            dis = self.calculate_spacing(x, board)
-            if x > 11 and event.pos[1] < 410:
-                return (dis * len(board.pieces[x]) - 25) <= event.pos[1] <= (
-                        dis * len(board.pieces[x]) + 25)
-            else:
-                return (790 - (dis * len(board.pieces[x]))) <= event.pos[1] <= (
-                        840 - (dis * len(board.pieces[x])))
+    def get_action(self):
+        action = self.action
+        self.action = None
+        return action
+
+    def get_extras(self):
+        return self.extras
+
+    def set_board(self, board):
+        self.board = board
 
     def set_playing(self, playing):
         self.playing = playing
+
+    def piece_selected(self, x, event):
+        if x is None:
+            return False
+        else:
+            dis = self.calculate_spacing(x, self.board)
+            if x > 11 and event.pos[1] < 410:
+                return (dis * len(self.board.pieces[x]) - 25) <= event.pos[1] <= (
+                        dis * len(self.board.pieces[x]) + 25)
+            else:
+                return (790 - (dis * len(self.board.pieces[x]))) <= event.pos[1] <= (
+                        840 - (dis * len(self.board.pieces[x])))
 
     def display_dice(self, die1, die2):
         # TODO if doubles display 4 dice
@@ -96,12 +110,11 @@ class GUI:
         self.display.blit(pygame.font.SysFont('Arial', 25).render(str(die2), True, (0, 0, 0)), (615, 435))
         pygame.display.update()
 
-    def display_pieces(self, board):
-
-        for piece in board.get_pieces():
-            location = self.pos_to_screen(piece.loc, self.calculate_spacing(piece.loc[0], board))
+    def display_pieces(self):
+        for piece in self.board.get_pieces():
+            location = self.pos_to_screen(piece.loc, self.calculate_spacing(piece.loc[0], self.board))
             pygame.draw.circle(self.background, WOOD if piece.colour == 'w' else BLACK, location, 25)
-        # TODO bug where roll button has to be displayed here
+        # TODO ***bug*** roll button has to be displayed here
         self.display.blit(self.background, (0, 0))
         pygame.draw.rect(self.display, WHITE, (575, 790, 47, 30))
         self.display.blit(pygame.font.SysFont('Arial', 25).render('Roll', True, (0, 0, 0)), (583, 800))
@@ -109,20 +122,11 @@ class GUI:
         pygame.display.update()
 
     def display_turn(self, turn):
-        # self.display.blit(self.background, (0, 0))
         if turn == 'w':
             self.display.blit(pygame.font.SysFont('Arial', 25).render('White\'s Go', True, (0, 0, 0)), (562, 8))
         elif turn == 'b':
             self.display.blit(pygame.font.SysFont('Arial', 25).render('Black\'s Go', True, (0, 0, 0)), (562, 8))
         pygame.display.update()
-
-    def get_action(self):
-        action = self.action
-        self.action = None
-        return action
-
-    def get_extras(self):
-        return self.extras
 
     def run(self):
         running = True
@@ -134,19 +138,20 @@ class GUI:
                     # TODO encode into the state the source and only store thr last click.
                     # I.E. if the state is selected and then another click is fired assume this
                     # click is the destination. Therefore the source click location need to be saved
-                    # in the "selected" state object
+                    # in the 'selected' state object
 
+                    index = self.screen_to_pos(event)
                     if event.button == 1 and self.dice_rolled(event):
                         self.action = Action.roll
 
-                    elif event.button == 1 and self.screen_to_pos(event) is not None:
+                    elif event.button == 1 and self.piece_selected(index, event):
                         self.action = Action.select
-                        self.extras["source"] = self.screen_to_pos(event)
+                        self.extras['source'] = self.screen_to_pos(event)
 
-                    elif event.button == 1 and self.screen_to_pos(event) is None:
+                    elif event.button == 1 and not self.piece_selected(index, event):
                         self.action = Action.move
-                        if "source" in self.extras:
-                            self.extras["destination"] = self.screen_to_pos(event)
+                        if 'source' in self.extras:
+                            self.extras['destination'] = self.screen_to_pos(event)
 
                 if event.type == pygame.QUIT:
                     running = False

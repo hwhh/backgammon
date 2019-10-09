@@ -22,6 +22,7 @@ class Game:
     def __init__(self, front_end):
         self.board = Board()
         self.front_end = front_end
+        self.front_end.set_board(self.board)
         self.state = State.init
         self.turn = None
         self.selected_piece = None
@@ -61,13 +62,16 @@ class Game:
                 return State.selected
 
         # args[0] = source args[1] = dest
-        if state == State.selected and Action == Action.move:
+        if state == State.selected and action == Action.move:
             source = self.front_end.get_extras()['source']
             destination = self.front_end.get_extras()['destination']
             piece = self.board.pieces[source][-1]
             # TODO clear source and destination
             if piece.colour == self.turn and destination in self.board.get_available_moves(piece, self.current_die):
                 self.current_die.remove(abs(source - destination))
+
+                # TODO make the move then check for available moves
+                # TODO Add the board to history before making the move
                 if len(self.current_die) == 0 or not self.moves_available():
                     self.change_turn()
                     return State.not_rolled
@@ -80,12 +84,13 @@ class Game:
         return len(self.board.get_all_available_moves(self.turn, self.current_die[:2])) > 0
 
     def run(self):
-        self.front_end.display_pieces(self.board)
+        self.front_end.display_pieces()
         while not self.game_over():
             time.sleep(0.5)
             action = self.front_end.get_action()
             if action is not None:
                 self.state = self.transition_function(self.state, action)
+                self.front_end.set_board(self.board)
 
     def get_turn(self):
         return self.turn
