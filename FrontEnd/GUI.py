@@ -87,9 +87,8 @@ class GUI:
     def set_playing(self, playing):
         self.playing = playing
 
-    # def initialise_display(self):
-
     def display_dice(self, die1, die2):
+        # TODO if doubles display 4 dice
         pygame.draw.rect(self.display, WHITE, (540, 420, 40, 40))
         self.display.blit(pygame.font.SysFont('Arial', 25).render(str(die1), True, (0, 0, 0)), (555, 435))
         pygame.draw.rect(self.display, WHITE, (600, 420, 40, 40))
@@ -120,6 +119,7 @@ class GUI:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1 and self.dice_rolled(event):
                         self.event = "Rolled Dice"
+
 
                     elif event.button == 1:
                         print("Selected")
