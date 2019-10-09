@@ -21,8 +21,9 @@ class GUI:
     def __init__(self):
         pygame.init()
         res = (1200, 824)
-        self.event = None
+        self.action = None
         self.playing = True
+        self.extras = {}
         self.clock = pygame.time.Clock()
         self.display = pygame.display.set_mode(res)
         self.background = pygame.transform.smoothscale(pygame.image.load('./Assets/board.png').convert(), res)
@@ -107,24 +108,45 @@ class GUI:
 
         pygame.display.update()
 
-    def get_event(self):
-        event = self.event
-        self.event = None
-        return event
+    def display_turn(self, turn):
+        # self.display.blit(self.background, (0, 0))
+        if turn == 'w':
+            self.display.blit(pygame.font.SysFont('Arial', 25).render('White\'s Go', True, (0, 0, 0)), (562, 8))
+        elif turn == 'b':
+            self.display.blit(pygame.font.SysFont('Arial', 25).render('Black\'s Go', True, (0, 0, 0)), (562, 8))
+        pygame.display.update()
+
+    def get_action(self):
+        action = self.action
+        self.action = None
+        return action
+
+    def get_extras(self):
+        return self.extras
 
     def run(self):
-        while self.playing:
+        running = True
+        while self.playing and running:
             self.clock.tick(60)
             for event in pygame.event.get():
                 if event.type == pygame.MOUSEBUTTONDOWN:
+
+                    # TODO encode into the state the source and only store thr last click.
+                    # I.E. if the state is selected and then another click is fired assume this
+                    # click is the destination. Therefore the source click location need to be saved
+                    # in the "selected" state object
+
                     if event.button == 1 and self.dice_rolled(event):
-                        self.event = "Rolled Dice"
+                        self.action = Action.roll
 
+                    elif event.button == 1 and self.screen_to_pos(event) is not None:
+                        self.action = Action.select
+                        self.extras["source"] = self.screen_to_pos(event)
 
-                    elif event.button == 1:
-                        print("Selected")
-                        index = self.screen_to_pos(event)
-                        self.event = ("Selected piece: ", index)
+                    elif event.button == 1 and self.screen_to_pos(event) is None:
+                        self.action = Action.move
+                        if "source" in self.extras:
+                            self.extras["destination"] = self.screen_to_pos(event)
 
                 if event.type == pygame.QUIT:
-                    run = False
+                    running = False

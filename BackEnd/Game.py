@@ -28,15 +28,18 @@ class Game:
         self.current_die = []
         self.history = []
 
-    def transition_function(self, state, action, *args):
+    def transition_function(self, state, action):
         # (Initial state)
         if state == State.init and action == Action.roll:
             self.roll_dice()
+            self.front_end.display_dice(self.current_die[0], self.current_die[1])
             if self.current_die[0] > self.current_die[1]:
                 self.turn = 'w'
+                self.front_end.display_turn(self.turn)
                 return State.rolled
             elif self.current_die[0] < self.current_die[1]:
-                self.turn = 'd'
+                self.turn = 'b'
+                self.front_end.display_turn(self.turn)
                 return State.rolled
 
         # State rolling dice need to return the dice
@@ -46,18 +49,25 @@ class Game:
             if len(available_moves) == 0:
                 self.change_turn()
                 return State.not_rolled
-            return State.rolled, self.current_die[:2]
+            self.front_end.display_dice(self.current_die[0], self.current_die[1])
+            return State.rolled
 
-        # args[0] = piece
+        # args[0] = piece TODO return available moves
         if state == State.rolled and action == Action.select:
-            if self.board.pieces[args[0]][-1].colour == self.turn:
-                available_moves = self.board.get_available_moves(args[0], self.current_die[:2])
+            source = self.front_end.get_extras()['source']
+            piece = self.board.pieces[source][-1]
+            if piece.colour == self.turn:
+                available_moves = self.board.get_available_moves(piece, self.current_die[:2])
                 return State.selected
 
-        # args[0] = piece args[1] = dest
+        # args[0] = source args[1] = dest
         if state == State.selected and Action == Action.move:
-            if args[1] in self.board.get_available_moves(args[0], self.current_die):
-                self.current_die.remove(abs(args[0].loc[0] - args[1]))
+            source = self.front_end.get_extras()['source']
+            destination = self.front_end.get_extras()['destination']
+            piece = self.board.pieces[source][-1]
+            # TODO clear source and destination
+            if piece.colour == self.turn and destination in self.board.get_available_moves(piece, self.current_die):
+                self.current_die.remove(abs(source - destination))
                 if len(self.current_die) == 0 or not self.moves_available():
                     self.change_turn()
                     return State.not_rolled
@@ -73,7 +83,9 @@ class Game:
         self.front_end.display_pieces(self.board)
         while not self.game_over():
             time.sleep(0.5)
-            event = self.front_end.get_event()
+            action = self.front_end.get_action()
+            if action is not None:
+                self.state = self.transition_function(self.state, action)
 
     def get_turn(self):
         return self.turn
@@ -86,6 +98,7 @@ class Game:
             self.turn = 'b'
         else:
             self.turn = 'w'
+        self.front_end.display_turn(self.turn)
 
     def roll_dice(self):
         die = (random.randint(1, 6), random.randint(1, 6))
