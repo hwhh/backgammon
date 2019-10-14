@@ -31,6 +31,10 @@ class GUI:
         self.clock = pygame.time.Clock()
         self.display = pygame.display.set_mode(res)
         self.background = pygame.transform.smoothscale(pygame.image.load('./Assets/board.png').convert(), res)
+        rect1 = self.display.blit(self.background, (0, 0))
+        rect2 = pygame.draw.rect(self.display, WHITE, (575, 790, 47, 30))
+        rect3 = self.display.blit(pygame.font.SysFont('Arial', 25).render('Roll', True, (0, 0, 0)), (583, 800))
+        pygame.display.update([rect1, rect2, rect3])
 
     @staticmethod
     def pos_to_screen(board_location, distance):
@@ -107,11 +111,12 @@ class GUI:
                         840 - (dis * len(self.board.pieces[x])))
 
     def show_available_moves(self, available_moves):
-        for move in available_moves:
-            x, y = self.pos_to_screen((move, 0), 0)
-            pygame.draw.polygon(self.background, GREEN, [(x - 25, y), (x + 25, y), (x, y + 50)])
-
-        pygame.display.update()
+        pass
+        # for move in available_moves:
+        #     x, y = self.pos_to_screen((move, 0), 0)
+        #     pygame.draw.polygon(self.background, GREEN, [(x - 25, y), (x + 25, y), (x, y + 50)])
+        #
+        # pygame.display.update()
 
     def display_dice(self, die1, die2):
         # TODO if doubles display 4 dice
@@ -121,22 +126,33 @@ class GUI:
         self.display.blit(pygame.font.SysFont('Arial', 25).render(str(die2), True, (0, 0, 0)), (615, 435))
         pygame.display.update([gui_die1, gui_die2])
 
+    def clear_dice(self):
+        rect1 = self.display.blit(self.background, (540, 420), [540, 420, 40, 40])
+        rect2 = self.display.blit(self.background, (600, 420), [600, 420, 40, 40])
+        pygame.display.update([rect1, rect2])
+
     def display_pieces(self):
         for piece in self.board.get_pieces():
             location = self.pos_to_screen(piece.loc, self.calculate_spacing(piece.loc[0], self.board))
-            piece = pygame.draw.circle(self.background, WOOD if piece.colour == 'w' else BLACK, location, 25)
-        # TODO ***bug*** roll button has to be displayed here
-        self.display.blit(self.background, (0, 0))
-        pygame.draw.rect(self.display, WHITE, (575, 790, 47, 30))
-        self.display.blit(pygame.font.SysFont('Arial', 25).render('Roll', True, (0, 0, 0)), (583, 800))
-        pygame.display.update()
+            pygame.draw.circle(self.display, WOOD if piece.colour == 'w' else BLACK, location, 25)
+        pygame.display.flip()
+
+    def update_piece(self, piece, old_loc):
+        location = self.pos_to_screen(old_loc, self.calculate_spacing(old_loc[0], self.board))
+        self.display.blit(self.background, (location[0] - 25, location[1] - 25),
+                          [location[0] - 25, location[1] - 25, 50, 50])
+
+        location = self.pos_to_screen(piece.loc, self.calculate_spacing(piece.loc[0], self.board))
+        pygame.draw.circle(self.display, WOOD if piece.colour == 'w' else BLACK, location, 25)
+        # TODO dont flip
+        pygame.display.flip()
 
     def display_turn(self, turn):
-        self.display.blit(self.background, (562, 8), [558, 6, 578, 10])
+        self.display.blit(self.background, (562, 8), [558, 4, 100, 14])
         turn = 'White\'s Go' if turn == 'w' else 'Black\'s Go'
         display_turn = pygame.font.SysFont('Arial', 25).render(turn, True, (0, 0, 0))
-        self.display.blit(display_turn, (562, 8))
-        pygame.display.update()
+        rect = self.display.blit(display_turn, (562, 8))
+        pygame.display.update([rect])
 
     def run(self):
         running = True

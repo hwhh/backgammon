@@ -18,3 +18,6 @@ class Piece:
 
     def home(self):
         return self.home
+
+    def move(self, destination):
+        self.loc = destination

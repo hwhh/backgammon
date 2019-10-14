@@ -1,3 +1,4 @@
+import copy
 import itertools
 
 from BackEnd.Piece import Piece
@@ -29,11 +30,10 @@ class Board:
     def get_pieces(self):
         return [piece for piece in itertools.chain.from_iterable(self.pieces)]
 
-    def move(self, source, destination):
-        if source[1] < 5:
-            return (self.pieces[source[0]][-1]).loc == source
-        else:
-            return (self.pieces[source[0] + 12][-1]).loc == source
+    def move(self, piece, destination):
+        self.pieces[destination].append(self.pieces[piece.loc[0]].pop())
+        piece.move((destination, len(self.pieces[destination]) - 1))
+
 
     def can_bear_off(self):
         return False
@@ -77,7 +77,7 @@ class Board:
             if dest4 is not None and 0 <= dest4 <= 23 and (
                     len(self.pieces[dest4]) <= 1 or (self.pieces[dest4][-1]).colour == piece.colour):
                 available_moves.append(dest4)
-        return list(set(available_moves))
+        return set(available_moves)
 
     def get_all_available_moves(self, colour, die):
         all_available_moves = []
@@ -94,3 +94,10 @@ class Board:
 
     def capture(self):
         pass
+
+    def copy(self):
+        board = Board()
+        board.pieces = copy.deepcopy(self.pieces)
+        board.black_bared_off = self.black_bared_off
+        board.black_bared_off = self.white_bared_off
+        return board
