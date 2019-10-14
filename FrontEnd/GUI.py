@@ -8,6 +8,7 @@ from pygame import font
 WHITE = (255, 255, 255)
 WOOD = (200, 200, 150)
 BLACK = (0, 0, 0)
+GREEN = (50, 205, 50)
 
 
 class Action(enum.Enum):
@@ -84,6 +85,9 @@ class GUI:
     def get_extras(self):
         return self.extras
 
+    def clear_extras(self):
+        self.extras = None
+
     def set_board(self, board):
         self.board = board
 
@@ -101,6 +105,13 @@ class GUI:
             else:
                 return (790 - (dis * len(self.board.pieces[x]))) <= event.pos[1] <= (
                         840 - (dis * len(self.board.pieces[x])))
+
+    def show_available_moves(self, available_moves):
+        for move in available_moves:
+            x, y = self.pos_to_screen((move, 0), 0)
+            pygame.draw.polygon(self.background, GREEN, [(x - 25, y), (x + 25, y), (x, y + 50)])
+
+        pygame.display.update()
 
     def display_dice(self, die1, die2):
         # TODO if doubles display 4 dice

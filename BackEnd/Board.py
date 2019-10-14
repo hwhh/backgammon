@@ -41,15 +41,19 @@ class Board:
     def get_destinations(self, piece, die):
         dest1, dest2, dest3, dest4 = None, None, None, None
         if piece.colour == 'w':
-            dest1, dest2 = piece.loc[0] - die[0], piece.loc[0] - die[1]
-            dest3 = piece.loc[0] - (die[0] + die[1])
-            if die[0] == die[1]:
-                dest4 = piece.loc[0] - (die[0] * 4)
+            dest1 = piece.loc[0] - die[0]
+            if len(die) > 1:
+                dest2 = piece.loc[0] - die[1]
+                dest3 = piece.loc[0] - (die[0] + die[1])
+                if die[0] == die[1]:
+                    dest4 = piece.loc[0] - (die[0] * 4)
         elif piece.colour == 'b':
-            dest1, dest2 = piece.loc[0] + die[0], piece.loc[0] + die[1]
-            dest3 = piece.loc[0] + (die[0] + die[1])
-            if die[0] == die[1]:
-                dest4 = piece.loc[0] + (die[0] * 4)
+            dest1 = piece.loc[0] + die[0]
+            if len(die) > 1:
+                dest2 = piece.loc[0] + die[1]
+                dest3 = piece.loc[0] + (die[0] + die[1])
+                if die[0] == die[1]:
+                    dest4 = piece.loc[0] + (die[0] * 4)
         return dest1, dest2, dest3, dest4
 
     def get_available_moves(self, piece, die):  # TODO check for doubles
@@ -62,10 +66,12 @@ class Board:
             if 0 <= dest1 <= 23 and (len(self.pieces[dest1]) <= 1 or (self.pieces[dest1][-1]).colour == piece.colour):
                 m1_available = True
                 available_moves.append(dest1)
-            if 0 <= dest2 <= 23 and (len(self.pieces[dest2]) <= 1 or (self.pieces[dest2][-1]).colour == piece.colour):
+            if dest2 is not None and 0 <= dest2 <= 23 and (
+                    len(self.pieces[dest2]) <= 1 or (self.pieces[dest2][-1]).colour == piece.colour):
                 m2_available = True
                 available_moves.append(dest2)
-            if 0 <= dest3 <= 23 and (len(self.pieces[dest3]) <= 1 or (self.pieces[dest3][-1]).colour == piece.colour):
+            if dest3 is not None and 0 <= dest3 <= 23 and (
+                    len(self.pieces[dest3]) <= 1 or (self.pieces[dest3][-1]).colour == piece.colour):
                 if m1_available or m2_available:
                     available_moves.append(dest3)
             if dest4 is not None and 0 <= dest4 <= 23 and (

@@ -17,6 +17,7 @@ class State(enum.Enum):
     moved = 4
 
 
+# TODO add undo function
 class Game:
 
     def __init__(self, front_end):
@@ -53,12 +54,13 @@ class Game:
             self.front_end.display_dice(self.current_die[0], self.current_die[1])
             return State.rolled
 
-        # args[0] = piece TODO return available moves
+        # args[0] = piece TODO fix displaying available moves
         if state == State.rolled and action == Action.select:
             source = self.front_end.get_extras()['source']
             piece = self.board.pieces[source][-1]
             if piece.colour == self.turn:
                 available_moves = self.board.get_available_moves(piece, self.current_die[:2])
+                self.front_end.show_available_moves(available_moves)
                 return State.selected
 
         # args[0] = source args[1] = dest
