@@ -104,28 +104,27 @@ class GUI:
 
     def display_dice(self, die1, die2):
         # TODO if doubles display 4 dice
-        pygame.draw.rect(self.display, WHITE, (540, 420, 40, 40))
+        gui_die1 = pygame.draw.rect(self.display, WHITE, (540, 420, 40, 40))
         self.display.blit(pygame.font.SysFont('Arial', 25).render(str(die1), True, (0, 0, 0)), (555, 435))
-        pygame.draw.rect(self.display, WHITE, (600, 420, 40, 40))
+        gui_die2 = pygame.draw.rect(self.display, WHITE, (600, 420, 40, 40))
         self.display.blit(pygame.font.SysFont('Arial', 25).render(str(die2), True, (0, 0, 0)), (615, 435))
-        pygame.display.update()
+        pygame.display.update([gui_die1, gui_die2])
 
     def display_pieces(self):
         for piece in self.board.get_pieces():
             location = self.pos_to_screen(piece.loc, self.calculate_spacing(piece.loc[0], self.board))
-            pygame.draw.circle(self.background, WOOD if piece.colour == 'w' else BLACK, location, 25)
+            piece = pygame.draw.circle(self.background, WOOD if piece.colour == 'w' else BLACK, location, 25)
         # TODO ***bug*** roll button has to be displayed here
         self.display.blit(self.background, (0, 0))
         pygame.draw.rect(self.display, WHITE, (575, 790, 47, 30))
         self.display.blit(pygame.font.SysFont('Arial', 25).render('Roll', True, (0, 0, 0)), (583, 800))
-
         pygame.display.update()
 
     def display_turn(self, turn):
-        if turn == 'w':
-            self.display.blit(pygame.font.SysFont('Arial', 25).render('White\'s Go', True, (0, 0, 0)), (562, 8))
-        elif turn == 'b':
-            self.display.blit(pygame.font.SysFont('Arial', 25).render('Black\'s Go', True, (0, 0, 0)), (562, 8))
+        self.display.blit(self.background, (562, 8), [558, 6, 578, 10])
+        turn = 'White\'s Go' if turn == 'w' else 'Black\'s Go'
+        display_turn = pygame.font.SysFont('Arial', 25).render(turn, True, (0, 0, 0))
+        self.display.blit(display_turn, (562, 8))
         pygame.display.update()
 
     def run(self):
