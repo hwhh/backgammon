@@ -5,7 +5,7 @@ from FrontEnd.GUI import GUI
 
 if __name__ == '__main__':
     gui = GUI()
-    game = Game(gui)
+    game = Game(gui, True)
     thread = Thread(target=game.run, args=()).start()
     gui.run()
     thread.join()

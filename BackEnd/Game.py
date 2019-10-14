@@ -20,9 +20,10 @@ class State(enum.Enum):
 # TODO add undo function
 class Game:
 
-    def __init__(self, front_end):
+    def __init__(self, front_end, log):
         self.board = Board()
         self.doubles = False
+        self.log = log
         self.front_end = front_end
         self.front_end.set_board(self.board)
         self.state = State.init
@@ -36,23 +37,27 @@ class Game:
 
         # (Initial state)
         if state == State.init and action == Action.roll:
-            print("State = Init and Action = Roll")
+            if self.log:
+                print("State = Init and Action = Roll")
             self.roll_dice()
             self.front_end.display_dice(self.current_die[0], self.current_die[1])
             if self.current_die[0] > self.current_die[1]:
-                print("\t\t White goes first")
+                if self.log:
+                    print("\t\t White goes first")
                 self.turn = 'w'
                 self.front_end.display_turn(self.turn)
                 return State.rolled
             elif self.current_die[0] < self.current_die[1]:
-                print("\t\t Black goes first")
+                if self.log:
+                    print("\t\t Black goes first")
                 self.turn = 'b'
                 self.front_end.display_turn(self.turn)
                 return State.rolled
 
         # State rolling dice need to return the dice
         if state == State.not_rolled and action == Action.roll:
-            print("State = Not Rolled and Action = Roll")
+            if self.log:
+                print("State = Not Rolled and Action = Roll")
             self.roll_dice()
             available_moves = self.board.get_all_available_moves(self.turn, self.current_die[:2])
             if len(available_moves) == 0:
@@ -63,26 +68,29 @@ class Game:
 
         # args[0] = piece TODO fix displaying available moves
         if state == State.rolled and action == Action.select:
-            print("State = Rolled and Action = Select")
+            if self.log:
+                print("State = Rolled and Action = Select")
             source = self.front_end.get_extras()['source']
             piece = self.board.pieces[source][-1]
             if piece.colour == self.turn:
-                print("\t\tPiece selected: " + str(piece.loc))
+                if self.log:
+                    print("\t\tPiece selected: " + str(piece.loc))
                 available_moves = self.board.get_available_moves(piece, self.current_die[:2])
                 self.front_end.show_available_moves(available_moves)
                 return State.selected
 
         # args[0] = source args[1] = dest
         if state == State.selected and action == Action.move:
-            print("State = Selected and Action = Move")
+            if self.log:
+                print("State = Selected and Action = Move")
             source = self.front_end.get_extras()['source']
             destination = self.front_end.get_extras()['destination']
             piece = self.board.pieces[source][-1]
-            # TODO clear source and destination
             available_moves = self.board.get_available_moves(piece, self.current_die)
             if piece.colour == self.turn and destination in available_moves:
                 move = abs(source - destination)
-                print("\t\tMove was: " + str(move))
+                if self.log:
+                    print("\t\tMove was: " + str(move))
                 # Find what die combinations where used
                 if move in self.current_die:
                     self.current_die.remove(move)
@@ -90,16 +98,19 @@ class Game:
                     self.current_die = self.current_die[move // self.current_die[0]:]
                 else:
                     self.current_die = []
+
                 old_loc = piece.loc
                 self.board.move(piece, destination)
                 self.history.append(self.board.copy())
                 self.front_end.update_piece(piece, old_loc)
+                # self.front_end.clear_extras()
 
                 # TODO make the move then check for available moves
                 # TODO Add the board to history before making the move
                 if len(self.current_die) == 0 or not self.moves_available():
                     self.change_turn()
-                    print("\t\tChanged turn.")
+                    if self.log:
+                        print("\t\tChanged turn.")
                     self.front_end.clear_dice()
                     return State.not_rolled
                 else:

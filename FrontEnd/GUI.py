@@ -42,18 +42,20 @@ class GUI:
             x, y = abs((board_location[0] * 90) - 1120), (765 - (distance * (board_location[1])))
         elif 6 <= board_location[0] < 12:
             x, y = abs((board_location[0] * 90) - 1065), (765 - (distance * (board_location[1])))
-        elif 12 <= board_location[0] < 17:
+        elif 12 <= board_location[0] < 18:
             x, y = abs((abs(board_location[0] - 23) * 90) - 1065), (distance * (board_location[1] + 1))
         else:
             x, y = abs((abs(board_location[0] - 23) * 90) - 1120), (distance * (board_location[1] + 1))
 
         # TODO draw number of counters stacked at this point
         # TODO fix bug with distance shifting the counter off the edge of board
-
+        print(y)
         if board_location[0] <= 11 and y < 420:
             y = 420
+            print("triggered")
         if board_location[0] > 11 and y > 400:
             y = 400
+            print("triggered")
         return x, y
 
     @staticmethod
@@ -76,7 +78,8 @@ class GUI:
 
     @staticmethod
     def calculate_spacing(x, board):
-        if len(board.pieces[x]) <= 5:
+        # TODO if the row exceeds 8, reblit row with smaller spacing
+        if len(board.pieces[x]) <= 8:
             return 50
         else:
             return int(round(50 - (len(board.pieces[x]) * 1.5)))
