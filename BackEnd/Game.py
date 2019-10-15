@@ -78,8 +78,11 @@ class Game:
                 available_moves = self.board.get_available_moves(piece, self.current_die[:2])
 
                 self.front_end.show_available_moves(available_moves)
-                self.front_end.high_light_selected(piece)
+                self.front_end.highlight_selected(piece)
                 return State.selected
+            else:
+                self.front_end.clear_extras()
+
 
         # args[0] = source args[1] = dest
         if state == State.selected and action == Action.move:
@@ -118,7 +121,8 @@ class Game:
                 else:
                     return State.rolled
 
-            self.front_end.un_high_light_selected()
+            self.front_end.clear_extras()
+            self.front_end.un_highlight_selected()
             return State.rolled
 
         return state
@@ -129,7 +133,6 @@ class Game:
     def run(self):
         self.front_end.display_pieces()
         while not self.game_over():
-            time.sleep(0.5)
             action = self.front_end.get_action()
             if action is not None:
                 self.state = self.transition_function(self.state, action)
