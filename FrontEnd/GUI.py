@@ -8,7 +8,7 @@ from pygame import font
 WHITE = (255, 255, 255)
 WOOD = (200, 200, 150)
 BLACK = (0, 0, 0)
-GREEN = (50, 205, 50)
+GREEN = (50, 205, 50, 50)
 
 
 class Action(enum.Enum):
@@ -28,7 +28,8 @@ class GUI:
         self.entities = {}
         self.changed_entities = {}
         ##########################################
-        self.highlighted_piece = None
+        self.selected_piece = None
+        self.available_moves = None
         self.board = None
         self.action = None
         self.playing = True
@@ -116,34 +117,54 @@ class GUI:
                 return (790 - (dis * len(self.board.pieces[x]))) <= event.pos[1] <= (
                         840 - (dis * len(self.board.pieces[x])))
 
-    def highlight_selected(self, piece):
-        self.highlighted_piece = piece
-        location = self.pos_to_screen(piece.loc, self.calculate_spacing(piece.loc[0], self.board))
-        self.display.blit(self.background, (location[0] - 25, location[1] - 25),
-                          [location[0] - 25, location[1] - 25, 50, 50])
-        location = self.pos_to_screen(piece.loc, self.calculate_spacing(piece.loc[0], self.board))
-        pygame.draw.circle(self.display, GREEN, location, 25)
-        # TODO dont flip
+    def highlight_piece(self, piece):
+        self.selected_piece = piece
+        loc = self.pos_to_screen(piece.loc, self.calculate_spacing(piece.loc[0], self.board))
+        self.display.blit(self.background, (loc[0] - 25, loc[1] - 25), [loc[0] - 25, loc[1] - 25, 50, 50])
+        loc = self.pos_to_screen(piece.loc, self.calculate_spacing(piece.loc[0], self.board))
+        pygame.draw.circle(self.display, GREEN, loc, 25)
         pygame.display.flip()
 
-    def un_highlight_selected(self):
-        location = self.pos_to_screen(self.highlighted_piece.loc,
-                                      self.calculate_spacing(self.highlighted_piece.loc[0], self.board))
-        self.display.blit(self.background, (location[0] - 25, location[1] - 25),
-                          [location[0] - 25, location[1] - 25, 50, 50])
-        location = self.pos_to_screen(self.highlighted_piece.loc,
-                                      self.calculate_spacing(self.highlighted_piece.loc[0], self.board))
-        pygame.draw.circle(self.display, WOOD if self.highlighted_piece.colour == 'w' else BLACK, location, 25)
-        # TODO dont flip
-        pygame.display.flip()
+    def remove_highlight_piece(self):
+        if self.selected_piece is not None:
+            loc = self.pos_to_screen(self.selected_piece.loc,
+                                     self.calculate_spacing(self.selected_piece.loc[0], self.board))
+            self.display.blit(self.background, (loc[0] - 25, loc[1] - 25), [loc[0] - 25, loc[1] - 25, 50, 50])
+            loc = self.pos_to_screen(self.selected_piece.loc,
+                                     self.calculate_spacing(self.selected_piece.loc[0], self.board))
+            pygame.draw.circle(self.display, WOOD if self.selected_piece.colour == 'w' else BLACK, loc, 25)
+            self.selected_piece = None
+            pygame.display.flip()
 
-    def show_available_moves(self, available_moves):
-        pass
-        # for move in available_moves:
-        #     x, y = self.pos_to_screen((move, 0), 0)
-        #     pygame.draw.polygon(self.background, GREEN, [(x - 25, y), (x + 25, y), (x, y + 50)])
-        #
-        # pygame.display.update()
+    def highlight_moves(self, available_moves):
+        self.available_moves = available_moves
+        rects = []
+        for move in self.available_moves:
+            x, y = self.pos_to_screen((move, 0), 0)
+            if move <= 5 or move >= 18:
+                x = x + 2
+            if move < 12:
+                rect = pygame.draw.polygon(self.display, GREEN, [(x - 35, y + 25), (x + 35, y + 25), (x, y - 275)], 3)
+            else:
+                rect = pygame.draw.polygon(self.display, GREEN, [(x - 35, y + 25), (x + 35, y + 25), (x, y + 300)], 3)
+            rects.append(rect)
+        pygame.display.update(rects)
+
+    def remove_highlight_moves(self):
+        if self.available_moves is not None:
+            for move in self.available_moves:
+                x, y = self.pos_to_screen((move, 0), 0)
+                if move <= 5 or move >= 18:
+                    x = x + 2
+                if move < 12:
+                    self.display.blit(self.background, (x - 37, y - 280), [x - 37, y - 280, 80, 310])
+                else:
+                    self.display.blit(self.background, (x - 37, y + 23), [x - 37, y + 23, 80, 310])
+
+                for piece in self.board.pieces[move]:
+                    location = self.pos_to_screen(piece.loc, self.calculate_spacing(piece.loc[0], self.board))
+                    pygame.draw.circle(self.display, WOOD if piece.colour == 'w' else BLACK, location, 25)
+        pygame.display.flip()
 
     def display_dice(self, die1, die2):
         # TODO if doubles display 4 dice
@@ -202,9 +223,9 @@ class GUI:
                         self.extras['source'] = self.screen_to_pos(event)
 
                     elif event.button == 1:
-                        self.action = Action.move
                         if 'source' in self.extras:
                             self.extras['destination'] = self.screen_to_pos(event)
+                        self.action = Action.move
 
                 if event.type == pygame.QUIT:
                     running = False

@@ -41,6 +41,8 @@ class Game:
             if self.log:
                 print("State = Init and Action = Roll")
             self.roll_dice()
+            while self.current_die[0] == self.current_die[1]:
+                self.roll_dice()
             self.front_end.display_dice(self.current_die[0], self.current_die[1])
             if self.current_die[0] > self.current_die[1]:
                 if self.log:
@@ -77,12 +79,18 @@ class Game:
                 if self.log:
                     print("\t\tPiece selected: " + str(piece.loc))
                 available_moves = self.board.get_available_moves(piece, self.current_die[:2])
-
-                self.front_end.show_available_moves(available_moves)
-                self.front_end.highlight_selected(piece)
+                self.front_end.highlight_piece(piece)
+                self.front_end.highlight_moves(available_moves)
                 return State.selected
             else:
                 self.front_end.clear_extras()
+
+        if state == State.rolled and action == Action.move:
+            self.front_end.clear_extras()
+            self.front_end.remove_highlight_piece()
+            self.front_end.remove_highlight_moves()
+
+            return State.rolled
 
         # args[0] = source args[1] = dest
         if state == State.selected and action == Action.move:
@@ -109,6 +117,7 @@ class Game:
                 self.history.append(self.board.copy())
                 self.front_end.update_piece(piece, old_loc)
                 self.front_end.clear_extras()
+                self.front_end.remove_highlight_moves()
 
                 # TODO make the move then check for available moves
                 # TODO Add the board to history before making the move
@@ -119,12 +128,15 @@ class Game:
                     self.front_end.clear_dice()
                     return State.not_rolled
                 else:
+
                     return State.rolled
 
+            self.front_end.remove_highlight_piece()
+            self.front_end.remove_highlight_moves()
             self.front_end.clear_extras()
-            self.front_end.un_highlight_selected()
             return State.rolled
 
+        # TODO should this be here?
         return state
 
     def update_front_end(self, func, *args):

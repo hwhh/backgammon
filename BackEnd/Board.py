@@ -35,7 +35,6 @@ class Board:
         self.pieces[destination].append(self.pieces[piece.loc[0]].pop())
         piece.move((destination, len(self.pieces[destination]) - 1))
 
-
     def can_bear_off(self):
         return False
 
