@@ -24,8 +24,11 @@ class GUI:
     def __init__(self):
         pygame.init()
         res = (1200, 824)
+        ############# DONT NEED ##################
         self.entities = {}
         self.changed_entities = {}
+        ##########################################
+        self.currently_highlighted_piece = None
         self.board = None
         self.action = None
         self.playing = True
@@ -93,7 +96,7 @@ class GUI:
         return self.extras
 
     def clear_extras(self):
-        self.extras = None
+        self.extras = {}
 
     def set_board(self, board):
         self.board = board
@@ -112,6 +115,27 @@ class GUI:
             else:
                 return (790 - (dis * len(self.board.pieces[x]))) <= event.pos[1] <= (
                         840 - (dis * len(self.board.pieces[x])))
+
+    def high_light_selected(self, piece):
+        if self.currently_highlighted_piece is not None:
+            self.un_high_light_selected(self.currently_highlighted_piece)
+        self.currently_highlighted_piece = piece
+        location = self.pos_to_screen(piece.loc, self.calculate_spacing(piece.loc[0], self.board))
+        self.display.blit(self.background, (location[0] - 25, location[1] - 25),
+                          [location[0] - 25, location[1] - 25, 50, 50])
+        location = self.pos_to_screen(piece.loc, self.calculate_spacing(piece.loc[0], self.board))
+        pygame.draw.circle(self.display, GREEN if piece.colour == 'w' else BLACK, location, 25)
+        # TODO dont flip
+        pygame.display.flip()
+
+    def un_high_light_selected(self, piece):
+        location = self.pos_to_screen(piece.loc, self.calculate_spacing(piece.loc[0], self.board))
+        self.display.blit(self.background, (location[0] - 25, location[1] - 25),
+                          [location[0] - 25, location[1] - 25, 50, 50])
+        location = self.pos_to_screen(piece.loc, self.calculate_spacing(piece.loc[0], self.board))
+        pygame.draw.circle(self.display, GREEN if piece.colour == 'w' else BLACK, location, 25)
+        # TODO dont flip
+        pygame.display.flip()
 
     def show_available_moves(self, available_moves):
         pass
@@ -173,11 +197,11 @@ class GUI:
                     if event.button == 1 and self.dice_rolled(event):
                         self.action = Action.roll
 
-                    elif event.button == 1 and self.piece_selected(index, event):
+                    elif event.button == 1 and self.piece_selected(index, event) and 'source' not in self.extras:
                         self.action = Action.select
                         self.extras['source'] = self.screen_to_pos(event)
 
-                    elif event.button == 1 and not self.piece_selected(index, event):
+                    elif event.button == 1:
                         self.action = Action.move
                         if 'source' in self.extras:
                             self.extras['destination'] = self.screen_to_pos(event)

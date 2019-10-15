@@ -76,7 +76,9 @@ class Game:
                 if self.log:
                     print("\t\tPiece selected: " + str(piece.loc))
                 available_moves = self.board.get_available_moves(piece, self.current_die[:2])
+
                 self.front_end.show_available_moves(available_moves)
+                self.front_end.high_light_selected(piece)
                 return State.selected
 
         # args[0] = source args[1] = dest
@@ -103,7 +105,7 @@ class Game:
                 self.board.move(piece, destination)
                 self.history.append(self.board.copy())
                 self.front_end.update_piece(piece, old_loc)
-                # self.front_end.clear_extras()
+                self.front_end.clear_extras()
 
                 # TODO make the move then check for available moves
                 # TODO Add the board to history before making the move
