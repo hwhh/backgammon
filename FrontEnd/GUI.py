@@ -24,6 +24,8 @@ class GUI:
     def __init__(self):
         pygame.init()
         res = (1200, 824)
+        self.entities = {}
+        self.changed_entities = {}
         self.board = None
         self.action = None
         self.playing = True
@@ -49,13 +51,11 @@ class GUI:
 
         # TODO draw number of counters stacked at this point
         # TODO fix bug with distance shifting the counter off the edge of board
-        print(y)
+
         if board_location[0] <= 11 and y < 420:
             y = 420
-            print("triggered")
         if board_location[0] > 11 and y > 400:
             y = 400
-            print("triggered")
         return x, y
 
     @staticmethod
