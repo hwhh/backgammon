@@ -21,6 +21,7 @@ class State(enum.Enum):
 class Game:
 
     def __init__(self, front_end, log):
+        self.headless = False
         self.board = Board()
         self.doubles = False
         self.log = log
@@ -83,7 +84,6 @@ class Game:
             else:
                 self.front_end.clear_extras()
 
-
         # args[0] = source args[1] = dest
         if state == State.selected and action == Action.move:
             if self.log:
@@ -126,6 +126,11 @@ class Game:
             return State.rolled
 
         return state
+
+    def update_front_end(self, func, *args):
+        # TODO call this
+        if not self.headless:
+            func(*args)
 
     def moves_available(self):
         return len(self.board.get_all_available_moves(self.turn, self.current_die[:2])) > 0
