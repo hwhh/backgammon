@@ -18,7 +18,7 @@ class Action(enum.Enum):
 
 
 # TODO after the event has taken place and board is updated hand back the board
-
+# TODO instead of pooling create a pipe?
 class GUI:
 
     def __init__(self):
@@ -117,14 +117,12 @@ class GUI:
                         840 - (dis * len(self.board.pieces[x])))
 
     def high_light_selected(self, piece):
-        if self.currently_highlighted_piece is not None:
-            self.un_high_light_selected(self.currently_highlighted_piece)
         self.currently_highlighted_piece = piece
         location = self.pos_to_screen(piece.loc, self.calculate_spacing(piece.loc[0], self.board))
         self.display.blit(self.background, (location[0] - 25, location[1] - 25),
                           [location[0] - 25, location[1] - 25, 50, 50])
         location = self.pos_to_screen(piece.loc, self.calculate_spacing(piece.loc[0], self.board))
-        pygame.draw.circle(self.display, GREEN if piece.colour == 'w' else BLACK, location, 25)
+        pygame.draw.circle(self.display, GREEN, location, 25)
         # TODO dont flip
         pygame.display.flip()
 
@@ -133,7 +131,7 @@ class GUI:
         self.display.blit(self.background, (location[0] - 25, location[1] - 25),
                           [location[0] - 25, location[1] - 25, 50, 50])
         location = self.pos_to_screen(piece.loc, self.calculate_spacing(piece.loc[0], self.board))
-        pygame.draw.circle(self.display, GREEN if piece.colour == 'w' else BLACK, location, 25)
+        pygame.draw.circle(self.display, WHITE if piece.colour == 'w' else BLACK, location, 25)
         # TODO dont flip
         pygame.display.flip()
 

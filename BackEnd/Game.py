@@ -118,6 +118,9 @@ class Game:
                 else:
                     return State.rolled
 
+            self.front_end.un_high_light_selected()
+            return State.rolled
+
         return state
 
     def moves_available(self):
