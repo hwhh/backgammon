@@ -26,7 +26,7 @@ class Game:
         self.doubles = False
         self.log = log
         self.front_end = front_end
-        self.front_end.set_board(self.board)
+        self.update_front_end([(self.front_end.set_board, [self.board])])
         self.state = State.init
         self.turn = None
         self.selected_piece = None
@@ -43,18 +43,20 @@ class Game:
             self.roll_dice()
             while self.current_die[0] == self.current_die[1]:
                 self.roll_dice()
-            self.front_end.display_dice(self.current_die[0], self.current_die[1])
+
+            self.update_front_end([(self.front_end.display_dice, [self.current_die[0], self.current_die[1]])])
+
             if self.current_die[0] > self.current_die[1]:
                 if self.log:
                     print("\t\t White goes first")
                 self.turn = 'w'
-                self.front_end.display_turn(self.turn)
+                self.update_front_end([(self.front_end.display_turn, [self.turn])])
                 return State.rolled
             elif self.current_die[0] < self.current_die[1]:
                 if self.log:
                     print("\t\t Black goes first")
                 self.turn = 'b'
-                self.front_end.display_turn(self.turn)
+                self.update_front_end([(self.front_end.display_turn, [self.turn])])
                 return State.rolled
 
         # State rolling dice need to return the dice
@@ -66,29 +68,30 @@ class Game:
             if len(available_moves) == 0:
                 self.change_turn()
                 return State.not_rolled
-            self.front_end.display_dice(self.current_die[0], self.current_die[1])
+            self.update_front_end([(self.front_end.display_dice, [self.current_die[0], self.current_die[1]])])
             return State.rolled
 
         # args[0] = piece TODO fix displaying available moves
         if state == State.rolled and action == Action.select:
             if self.log:
                 print("State = Rolled and Action = Select")
-            source = self.front_end.get_extras()['source']
+
+            source = self.front_end.get_extras()['source']  # TODO this is not correct
             piece = self.board.pieces[source][-1]
             if piece.colour == self.turn:
                 if self.log:
                     print("\t\tPiece selected: " + str(piece.loc))
                 available_moves = self.board.get_available_moves(piece, self.current_die[:2])
-                self.front_end.highlight_piece(piece)
-                self.front_end.highlight_moves(available_moves)
+                self.update_front_end([(self.front_end.highlight_piece, [piece]),
+                                       (self.front_end.highlight_moves, [available_moves])])
                 return State.selected
             else:
                 self.front_end.clear_extras()
 
         if state == State.rolled and action == Action.move:
-            self.front_end.clear_extras()
-            self.front_end.remove_highlight_piece()
-            self.front_end.remove_highlight_moves()
+            self.update_front_end([(self.front_end.clear_extras, []),
+                                   (self.front_end.remove_highlight_piece, []),
+                                   (self.front_end.remove_highlight_moves, [])])
 
             return State.rolled
 
@@ -96,8 +99,8 @@ class Game:
         if state == State.selected and action == Action.move:
             if self.log:
                 print("State = Selected and Action = Move")
-            source = self.front_end.get_extras()['source']
-            destination = self.front_end.get_extras()['destination']
+            source = self.front_end.get_extras()['source']  # TODO this is not correct
+            destination = self.front_end.get_extras()['destination']  # TODO this is not correct
             piece = self.board.pieces[source][-1]
             available_moves = self.board.get_available_moves(piece, self.current_die)
             if piece.colour == self.turn and destination in available_moves:
@@ -115,9 +118,10 @@ class Game:
                 old_loc = piece.loc
                 self.board.move(piece, destination)
                 self.history.append(self.board.copy())
-                self.front_end.update_piece(piece, old_loc)
-                self.front_end.clear_extras()
-                self.front_end.remove_highlight_moves()
+
+                self.update_front_end([(self.front_end.update_piece, [piece, old_loc]),
+                                       (self.front_end.clear_extras, []),
+                                       (self.front_end.remove_highlight_moves, [])])
 
                 # TODO make the move then check for available moves
                 # TODO Add the board to history before making the move
@@ -131,29 +135,32 @@ class Game:
 
                     return State.rolled
 
-            self.front_end.remove_highlight_piece()
-            self.front_end.remove_highlight_moves()
-            self.front_end.clear_extras()
+            self.update_front_end([(self.front_end.remove_highlight_piece, []),
+                                   (self.front_end.remove_highlight_moves, []),
+                                   (self.front_end.clear_extras, [])])
             return State.rolled
 
         # TODO should this be here?
         return state
 
-    def update_front_end(self, func, *args):
-        # TODO call this
+    def update_front_end(self, funcs):
         if not self.headless:
-            func(*args)
+            for func, args in funcs:
+                func(*args)
 
     def moves_available(self):
         return len(self.board.get_all_available_moves(self.turn, self.current_die[:2])) > 0
 
     def run(self):
-        self.front_end.display_pieces()
+        self.update_front_end([(self.front_end.display_pieces, [])])
         while not self.game_over():
             action = self.front_end.get_action()
             if action is not None:
+                if action == Action.quit:
+                    break
                 self.state = self.transition_function(self.state, action)
-                self.front_end.set_board(self.board)
+
+                self.update_front_end([(self.front_end.set_board, [self.board])])
 
     def get_turn(self):
         return self.turn
@@ -166,7 +173,7 @@ class Game:
             self.turn = 'b'
         else:
             self.turn = 'w'
-        self.front_end.display_turn(self.turn)
+        self.update_front_end([(self.front_end.display_turn, [self.turn])])
 
     def roll_dice(self):
         die = (random.randint(1, 6), random.randint(1, 6))

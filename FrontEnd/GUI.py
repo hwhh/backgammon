@@ -15,6 +15,7 @@ class Action(enum.Enum):
     roll = 0
     select = 1
     move = 2
+    quit = -1
 
 
 # TODO after the event has taken place and board is updated hand back the board
@@ -208,12 +209,6 @@ class GUI:
             self.clock.tick(60)
             for event in pygame.event.get():
                 if event.type == pygame.MOUSEBUTTONDOWN:
-
-                    # TODO encode into the state the source and only store thr last click.
-                    # I.E. if the state is selected and then another click is fired assume this
-                    # click is the destination. Therefore the source click location need to be saved
-                    # in the 'selected' state object
-
                     index = self.screen_to_pos(event)
                     if event.button == 1 and self.dice_rolled(event):
                         self.action = Action.roll
@@ -228,4 +223,5 @@ class GUI:
                         self.action = Action.move
 
                 if event.type == pygame.QUIT:
+                    self.action = Action.quit
                     running = False
