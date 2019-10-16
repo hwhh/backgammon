@@ -24,7 +24,7 @@ class GUI:
 
     def __init__(self):
         pygame.init()
-        res = (1200, 824)
+        res = (1280, 824)
         ############# DONT NEED ##################
         self.entities = {}
         self.changed_entities = {}

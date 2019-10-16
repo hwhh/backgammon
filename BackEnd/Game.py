@@ -77,6 +77,7 @@ class Game:
                 print("State = Rolled and Action = Select")
 
             source = self.front_end.get_extras()['source']  # TODO this is not correct
+
             piece = self.board.pieces[source][-1]
             if piece.colour == self.turn:
                 if self.log:
@@ -99,8 +100,10 @@ class Game:
         if state == State.selected and action == Action.move:
             if self.log:
                 print("State = Selected and Action = Move")
+
             source = self.front_end.get_extras()['source']  # TODO this is not correct
             destination = self.front_end.get_extras()['destination']  # TODO this is not correct
+
             piece = self.board.pieces[source][-1]
             available_moves = self.board.get_available_moves(piece, self.current_die)
             if piece.colour == self.turn and destination in available_moves:
