@@ -5,17 +5,12 @@ import queue
 import pygame, random, time
 from pygame import font
 
+from BackEnd.Action import Action, ActionType
+
 WHITE = (255, 255, 255)
 WOOD = (200, 200, 150)
 BLACK = (0, 0, 0)
 GREEN = (50, 205, 50, 50)
-
-
-class Action(enum.Enum):
-    roll = 0
-    select = 1
-    move = 2
-    quit = -1
 
 
 # TODO after the event has taken place and board is updated hand back the board
@@ -210,18 +205,19 @@ class GUI:
             for event in pygame.event.get():
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     index = self.screen_to_pos(event)
+                    print("here clicked: " + str(self.dice_rolled(event)))
                     if event.button == 1 and self.dice_rolled(event):
-                        self.action = Action.roll
+                        self.action = Action(ActionType.roll)
 
                     elif event.button == 1 and self.piece_selected(index, event) and 'source' not in self.extras:
-                        self.action = Action.select
                         self.extras['source'] = self.screen_to_pos(event)
+                        self.action = Action(ActionType.select, self.extras)
 
                     elif event.button == 1:
                         if 'source' in self.extras:
                             self.extras['destination'] = self.screen_to_pos(event)
-                        self.action = Action.move
+                        self.action = Action(ActionType.move, self.extras)
 
                 if event.type == pygame.QUIT:
-                    self.action = Action.quit
+                    self.action = ActionType.quit
                     running = False

@@ -1,12 +1,8 @@
 import enum
 import random
-import time
 
-# from pygame.threads import Thread 9378
-
+from BackEnd.Action import ActionType
 from BackEnd.Board import Board
-from BackEnd.Piece import Piece
-from FrontEnd.GUI import GUI, Action
 
 
 class State(enum.Enum):
@@ -37,7 +33,7 @@ class Game:
         # TODO if selected and invalid move, go back to not selected
 
         # (Initial state)
-        if state == State.init and action == Action.roll:
+        if state == State.init and action.type == ActionType.roll:
             if self.log:
                 print("State = Init and Action = Roll")
             self.roll_dice()
@@ -60,7 +56,7 @@ class Game:
                 return State.rolled
 
         # State rolling dice need to return the dice
-        if state == State.not_rolled and action == Action.roll:
+        if state == State.not_rolled and action.type == ActionType.roll:
             if self.log:
                 print("State = Not Rolled and Action = Roll")
             self.roll_dice()
@@ -72,11 +68,11 @@ class Game:
             return State.rolled
 
         # args[0] = piece TODO fix displaying available moves
-        if state == State.rolled and action == Action.select:
+        if state == State.rolled and action.type == ActionType.select:
             if self.log:
                 print("State = Rolled and Action = Select")
 
-            source = self.front_end.get_extras()['source']  # TODO this is not correct
+            source = action.extras['source']  # TODO this is not correct
 
             piece = self.board.pieces[source][-1]
             if piece.colour == self.turn:
@@ -89,7 +85,7 @@ class Game:
             else:
                 self.front_end.clear_extras()
 
-        if state == State.rolled and action == Action.move:
+        if state == State.rolled and action.type == ActionType.move:
             self.update_front_end([(self.front_end.clear_extras, []),
                                    (self.front_end.remove_highlight_piece, []),
                                    (self.front_end.remove_highlight_moves, [])])
@@ -97,12 +93,12 @@ class Game:
             return State.rolled
 
         # args[0] = source args[1] = dest
-        if state == State.selected and action == Action.move:
+        if state == State.selected and action.type == ActionType.move:
             if self.log:
                 print("State = Selected and Action = Move")
 
-            source = self.front_end.get_extras()['source']  # TODO this is not correct
-            destination = self.front_end.get_extras()['destination']  # TODO this is not correct
+            source = action.extras['source']
+            destination = action.extras['destination']
 
             piece = self.board.pieces[source][-1]
             available_moves = self.board.get_available_moves(piece, self.current_die)
@@ -157,9 +153,9 @@ class Game:
     def run(self):
         self.update_front_end([(self.front_end.display_pieces, [])])
         while not self.game_over():
-            action = self.front_end.get_action()
+            action = self.front_end.get_action()  # TODO this is horrible!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             if action is not None:
-                if action == Action.quit:
+                if action.type == ActionType.quit:
                     break
                 self.state = self.transition_function(self.state, action)
 
