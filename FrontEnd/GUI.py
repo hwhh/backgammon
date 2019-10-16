@@ -20,10 +20,6 @@ class GUI:
     def __init__(self):
         pygame.init()
         res = (1280, 824)
-        ############# DONT NEED ##################
-        self.entities = {}
-        self.changed_entities = {}
-        ##########################################
         self.selected_piece = None
         self.available_moves = None
         self.board = None
@@ -31,6 +27,7 @@ class GUI:
         self.playing = True
         self.extras = {}
         self.clock = pygame.time.Clock()
+        self.players = []
         self.display = pygame.display.set_mode(res)
         self.background = pygame.transform.smoothscale(pygame.image.load('./Assets/board.png').convert(), res)
         rect1 = self.display.blit(self.background, (0, 0))
@@ -78,7 +75,7 @@ class GUI:
 
     @staticmethod
     def calculate_spacing(x, board):
-        # TODO if the row exceeds 8, reblit row with smaller spacing
+        # TODO if the row exceeds 8, reblit entire row with smaller spacing
         if len(board.pieces[x]) <= 8:
             return 50
         else:
@@ -100,6 +97,9 @@ class GUI:
 
     def set_playing(self, playing):
         self.playing = playing
+
+    def set_players(self, players):
+        self.players = players
 
     def piece_selected(self, x, event):
         if x is None:
@@ -198,6 +198,7 @@ class GUI:
         rect = self.display.blit(display_turn, (562, 8))
         pygame.display.update([rect])
 
+    # THIS is only ever used for when there are players
     def run(self):
         running = True
         while self.playing and running:
@@ -205,18 +206,21 @@ class GUI:
             for event in pygame.event.get():
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     index = self.screen_to_pos(event)
-                    print("here clicked: " + str(self.dice_rolled(event)))
-                    if event.button == 1 and self.dice_rolled(event):
-                        self.action = Action(ActionType.roll)
+                    for player in self.players:
+                        if event.button == 1 and self.dice_rolled(event):
+                            # self.action = Action(ActionType.roll)
+                            player.set_action(Action(ActionType.roll))
 
-                    elif event.button == 1 and self.piece_selected(index, event) and 'source' not in self.extras:
-                        self.extras['source'] = self.screen_to_pos(event)
-                        self.action = Action(ActionType.select, self.extras)
+                        elif event.button == 1 and self.piece_selected(index, event) and 'source' not in self.extras:
+                            self.extras['source'] = self.screen_to_pos(event)
+                            # self.action = Action(ActionType.select, self.extras)
+                            player.set_action(Action(ActionType.select, self.extras))
 
-                    elif event.button == 1:
-                        if 'source' in self.extras:
-                            self.extras['destination'] = self.screen_to_pos(event)
-                        self.action = Action(ActionType.move, self.extras)
+                        elif event.button == 1:
+                            if 'source' in self.extras:
+                                self.extras['destination'] = self.screen_to_pos(event)
+                            # self.action = Action(ActionType.move, self.extras)
+                            player.set_action(Action(ActionType.move, self.extras))
 
                 if event.type == pygame.QUIT:
                     self.action = ActionType.quit

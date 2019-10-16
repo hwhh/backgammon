@@ -1,5 +1,6 @@
 import enum
 import random
+import logging
 
 from BackEnd.Action import ActionType
 from BackEnd.Board import Board
@@ -13,29 +14,32 @@ class State(enum.Enum):
     moved = 4
 
 
+logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
+
+
 # TODO add undo function
 class Game:
 
-    def __init__(self, front_end, log):
-        self.headless = False
-        self.board = Board()
-        self.doubles = False
-        self.log = log
+    def __init__(self, front_end, player1, player2):
+        self.player1 = player1
+        self.player2 = player2
         self.front_end = front_end
-        self.update_front_end([(self.front_end.set_board, [self.board])])
-        self.state = State.init
+        self.board = Board()
         self.turn = None
         self.selected_piece = None
-        self.current_die = []
+        self.doubles = False
+        self.headless = False
         self.history = []
+        self.current_die = []
+        self.update_front_end([(self.front_end.set_board, [self.board])])  # TODO
+        self.state = State.init
 
     def transition_function(self, state, action):
         # TODO if selected and invalid move, go back to not selected
 
         # (Initial state)
         if state == State.init and action.type == ActionType.roll:
-            if self.log:
-                print("State = Init and Action = Roll")
+            logging.info("State = Init and Action = Roll")
             self.roll_dice()
             while self.current_die[0] == self.current_die[1]:
                 self.roll_dice()
@@ -43,22 +47,19 @@ class Game:
             self.update_front_end([(self.front_end.display_dice, [self.current_die[0], self.current_die[1]])])
 
             if self.current_die[0] > self.current_die[1]:
-                if self.log:
-                    print("\t\t White goes first")
+                logging.info("\t\t White goes first")
                 self.turn = 'w'
                 self.update_front_end([(self.front_end.display_turn, [self.turn])])
                 return State.rolled
             elif self.current_die[0] < self.current_die[1]:
-                if self.log:
-                    print("\t\t Black goes first")
+                logging.info("\t\t Black goes first")
                 self.turn = 'b'
                 self.update_front_end([(self.front_end.display_turn, [self.turn])])
                 return State.rolled
 
         # State rolling dice need to return the dice
         if state == State.not_rolled and action.type == ActionType.roll:
-            if self.log:
-                print("State = Not Rolled and Action = Roll")
+            logging.info("State = Not Rolled and Action = Roll")
             self.roll_dice()
             available_moves = self.board.get_all_available_moves(self.turn, self.current_die[:2])
             if len(available_moves) == 0:
@@ -69,15 +70,13 @@ class Game:
 
         # args[0] = piece TODO fix displaying available moves
         if state == State.rolled and action.type == ActionType.select:
-            if self.log:
-                print("State = Rolled and Action = Select")
+            logging.info("State = Rolled and Action = Select")
 
-            source = action.extras['source']  # TODO this is not correct
+            source = action.extras[0]['source']  # TODO this is not correct
 
             piece = self.board.pieces[source][-1]
             if piece.colour == self.turn:
-                if self.log:
-                    print("\t\tPiece selected: " + str(piece.loc))
+                logging.info("\t\tPiece selected: " + str(piece.loc))
                 available_moves = self.board.get_available_moves(piece, self.current_die[:2])
                 self.update_front_end([(self.front_end.highlight_piece, [piece]),
                                        (self.front_end.highlight_moves, [available_moves])])
@@ -94,18 +93,16 @@ class Game:
 
         # args[0] = source args[1] = dest
         if state == State.selected and action.type == ActionType.move:
-            if self.log:
-                print("State = Selected and Action = Move")
+            logging.info("State = Selected and Action = Move")
 
-            source = action.extras['source']
-            destination = action.extras['destination']
+            source = action.extras[0]['source']
+            destination = action.extras[0]['destination']
 
             piece = self.board.pieces[source][-1]
             available_moves = self.board.get_available_moves(piece, self.current_die)
             if piece.colour == self.turn and destination in available_moves:
                 move = abs(source - destination)
-                if self.log:
-                    print("\t\tMove was: " + str(move))
+                logging.info("\t\tMove was: " + str(move))
                 # Find what die combinations where used
                 if move in self.current_die:
                     self.current_die.remove(move)
@@ -126,8 +123,7 @@ class Game:
                 # TODO Add the board to history before making the move
                 if len(self.current_die) == 0 or not self.moves_available():
                     self.change_turn()
-                    if self.log:
-                        print("\t\tChanged turn.")
+                    logging.info("\t\tChanged turn.")
                     self.front_end.clear_dice()
                     return State.not_rolled
                 else:
@@ -153,13 +149,22 @@ class Game:
     def run(self):
         self.update_front_end([(self.front_end.display_pieces, [])])
         while not self.game_over():
-            action = self.front_end.get_action()  # TODO this is horrible!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            if self.turn == self.player1.colour:
+                action = self.player1.get_action()
+            else:
+                action = self.player2.get_action()
+
             if action is not None:
-                if action.type == ActionType.quit:
-                    break
                 self.state = self.transition_function(self.state, action)
 
-                self.update_front_end([(self.front_end.set_board, [self.board])])
+            # action = self.front_end.get_action()  # TODO this is horrible!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            #
+            # if action is not None:
+            #     if action.type == ActionType.quit:
+            #         break
+            #     self.state = self.transition_function(self.state, action)
+            #
+            #     self.update_front_end([(self.front_end.set_board, [self.board])])
 
     def get_turn(self):
         return self.turn
