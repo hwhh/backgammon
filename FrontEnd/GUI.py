@@ -20,6 +20,7 @@ class GUI:
     def __init__(self):
         pygame.init()
         res = (1280, 824)
+        self.turn = None
         self.selected_piece = None
         self.available_moves = None
         self.board = None
@@ -193,6 +194,7 @@ class GUI:
 
     def display_turn(self, turn):
         self.display.blit(self.background, (562, 8), [558, 4, 100, 14])
+        self.turn = turn
         turn = 'White\'s Go' if turn == 'w' else 'Black\'s Go'
         display_turn = pygame.font.SysFont('Arial', 25).render(turn, True, (0, 0, 0))
         rect = self.display.blit(display_turn, (562, 8))
@@ -205,23 +207,38 @@ class GUI:
             self.clock.tick(60)
             for event in pygame.event.get():
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    index = self.screen_to_pos(event)
-                    for player in self.players:
-                        if event.button == 1 and self.dice_rolled(event):
-                            # self.action = Action(ActionType.roll)
-                            player.set_action(Action(ActionType.roll))
 
-                        elif event.button == 1 and self.piece_selected(index, event) and 'source' not in self.extras:
-                            self.extras['source'] = self.screen_to_pos(event)
-                            # self.action = Action(ActionType.select, self.extras)
-                            player.set_action(Action(ActionType.select, self.extras))
+                    # Player vs Player
+                    if len(self.players) == 2:
+                        if self.turn == self.players[0].colour:
+                            self.players[0].set_action(self.create_action(event))
+                        elif self.turn == self.players[1].colour:
+                            self.players[1].set_action(self.create_action(event))
+                        else:  # initial roll
+                            self.players[1].set_action(self.create_action(event))  # dose not matter who roles first
 
-                        elif event.button == 1:
-                            if 'source' in self.extras:
-                                self.extras['destination'] = self.screen_to_pos(event)
-                            # self.action = Action(ActionType.move, self.extras)
-                            player.set_action(Action(ActionType.move, self.extras))
+
+                    # PLayer vs AI - the human player should be player 2
+                    else:
+                        pass
 
                 if event.type == pygame.QUIT:
                     self.action = ActionType.quit
                     running = False
+
+    def create_action(self, event):
+        index = self.screen_to_pos(event)
+        if event.button == 1 and self.dice_rolled(event):
+            # self.action = Action(ActionType.roll)
+            return Action(ActionType.roll)
+
+        elif event.button == 1 and self.piece_selected(index, event) and 'source' not in self.extras:
+            self.extras['source'] = self.screen_to_pos(event)
+            # self.action = Action(ActionType.select, self.extras)
+            return Action(ActionType.select, self.extras)
+
+        elif event.button == 1:
+            if 'source' in self.extras:
+                self.extras['destination'] = self.screen_to_pos(event)
+            # self.action = Action(ActionType.move, self.extras)
+            return Action(ActionType.move, self.extras)

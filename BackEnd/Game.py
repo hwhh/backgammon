@@ -4,6 +4,7 @@ import logging
 
 from BackEnd.Action import ActionType
 from BackEnd.Board import Board
+from BackEnd.PlayerEvent import OrEvent
 
 
 class State(enum.Enum):
@@ -148,15 +149,16 @@ class Game:
 
     def run(self):
         self.update_front_end([(self.front_end.display_pieces, [])])
+        or_e = OrEvent(self.player1.event, self.player2.event)
         while not self.game_over():
+            or_e.wait()
             if self.turn == self.player1.colour:
                 action = self.player1.get_action()
             else:
                 action = self.player2.get_action()
-
             if action is not None:
                 self.state = self.transition_function(self.state, action)
-
+            or_e.clear()
             # action = self.front_end.get_action()  # TODO this is horrible!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             #
             # if action is not None:
