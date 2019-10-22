@@ -11,7 +11,9 @@ class Board:
     def __init__(self):
         self.pieces = [[] for _ in range(24)]
         self.black_bared_off = 0
+        self.black_captured = 0
         self.white_bared_off = 0
+        self.white_captured = 0
         self.initialise_board()
 
     def initialise_board(self):
@@ -20,7 +22,6 @@ class Board:
         pieces.extend([Piece(loc, 'b') for loc in zip([0] * 2, range(2))])
         pieces.extend([Piece(loc, 'w') for loc in zip([5] * 5, range(5))])
         pieces.extend([Piece(loc, 'b') for loc in zip([18] * 5, range(5))])
-
         pieces.extend([Piece(loc, 'b') for loc in zip([16] * 3, range(3))])
         pieces.extend([Piece(loc, 'w') for loc in zip([7] * 3, range(3))])
         pieces.extend([Piece(loc, 'b') for loc in zip([11] * 5, range(5))])
@@ -32,6 +33,15 @@ class Board:
         return [piece for piece in itertools.chain.from_iterable(self.pieces)]
 
     def move(self, piece, destination):
+        if len(self.pieces[destination][-1]) > 0:
+            if self.pieces[destination][-1] != piece.colour:
+                if self.pieces[destination][-1] == 'b':
+                    self.black_captured += 1
+                elif self.pieces[destination][-1] == 'w':
+                    self.white_captured += 1
+                self.pieces[destination][-1].captured = True
+            return "capture"
+
         self.pieces[destination].append(self.pieces[piece.loc[0]].pop())
         piece.move((destination, len(self.pieces[destination]) - 1))
 
@@ -56,10 +66,12 @@ class Board:
                     dest4 = piece.loc[0] + (die[0] * 4)
         return dest1, dest2, dest3, dest4
 
-    def get_available_moves(self, piece, die):  # TODO check for doubles
+    def get_available_moves(self, piece, dice):  # TODO check for doubles
         available_moves = []
-        dest1, dest2, dest3, dest4 = self.get_destinations(piece, die)
+        dest1, dest2, dest3, dest4 = self.get_destinations(piece, dice)
         if self.can_bear_off():
+            pass
+        elif self.captured():
             pass
         else:
             m1_available, m2_available = False, False
@@ -79,12 +91,19 @@ class Board:
                 available_moves.append(dest4)
         return set(available_moves)
 
-    def get_all_available_moves(self, colour, die):
+    def get_all_available_moves(self, colour, dice):
         all_available_moves = []
-        for col in self.pieces:
-            if len(col) > 0 and col[-1].colour == colour:
-                all_available_moves.extend(self.get_available_moves(col[-1], die))
-        return all_available_moves
+
+        if self.black_captured >= 1 and colour == 'b':
+            pass
+        elif self.white_captured >= 1 and colour == 'w':
+            pass
+
+        else:
+            for col in self.pieces:
+                if len(col) > 0 and col[-1].colour == colour:
+                    all_available_moves.extend(self.get_available_moves(col[-1], dice))
+            return all_available_moves
 
     def bear_off(self):
         pass
@@ -93,6 +112,9 @@ class Board:
         pass
 
     def capture(self):
+        pass
+
+    def captured(self):
         pass
 
     def copy(self):

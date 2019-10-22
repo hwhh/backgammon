@@ -19,6 +19,8 @@ logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
 
 
 # TODO add undo function
+# TODO at the moment if user uses both die, check intermediate moves to ensure nothing is captured
+# TODO you need to make every move, therefore if there is a way to use both die you have to do that
 class Game:
 
     def __init__(self, front_end, player1, player2):
@@ -32,7 +34,7 @@ class Game:
         self.headless = False
         self.history = []
         self.current_die = []
-        self.update_front_end([(self.front_end.set_board, [self.board])])  # TODO
+        self.update_front_end([(self.front_end.set_board, [self.board])])
         self.state = State.init
 
     def transition_function(self, state, action):
@@ -113,7 +115,7 @@ class Game:
                     self.current_die = []
 
                 old_loc = piece.loc
-                self.board.move(piece, destination)
+                next_state = self.board.move(piece, destination)
                 self.history.append(self.board.copy())
 
                 self.update_front_end([(self.front_end.update_piece, [piece, old_loc]),
@@ -136,7 +138,6 @@ class Game:
                                    (self.front_end.clear_extras, [])])
             return State.rolled
 
-        # TODO should this be here?
         return state
 
     def update_front_end(self, funcs):
@@ -159,14 +160,6 @@ class Game:
             if action is not None:
                 self.state = self.transition_function(self.state, action)
             or_e.clear()
-            # action = self.front_end.get_action()  # TODO this is horrible!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            #
-            # if action is not None:
-            #     if action.type == ActionType.quit:
-            #         break
-            #     self.state = self.transition_function(self.state, action)
-            #
-            #     self.update_front_end([(self.front_end.set_board, [self.board])])
 
     def get_turn(self):
         return self.turn

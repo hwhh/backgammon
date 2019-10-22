@@ -15,8 +15,9 @@ if __name__ == '__main__':
     player1 = Player('w')
     player2 = Player('b')
     game = Game(gui, player1, player2)
-
     gui.set_players([player1, player2])
+
+    # Currently te players are running in the main thread which could cause issues later on
 
     thread = Thread(target=game.run, args=())
     thread.start()
