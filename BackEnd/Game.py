@@ -13,6 +13,9 @@ class State(enum.Enum):
     rolled = 2
     selected = 3
     moved = 4
+    captured = 5
+    bear_on = 6
+    bear_off = 7
 
 
 logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
@@ -116,11 +119,15 @@ class Game:
 
                 old_loc = piece.loc
                 next_state = self.board.move(piece, destination)
-                self.history.append(self.board.copy())
+                if next_state == State.captured:
+                    self.update_front_end([(self.front_end.update_piece, [self.b, old_loc])])
 
+                self.history.append(self.board.copy())
                 self.update_front_end([(self.front_end.update_piece, [piece, old_loc]),
                                        (self.front_end.clear_extras, []),
                                        (self.front_end.remove_highlight_moves, [])])
+
+
 
                 # TODO make the move then check for available moves
                 # TODO Add the board to history before making the move

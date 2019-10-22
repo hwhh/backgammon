@@ -1,6 +1,7 @@
 import copy
 import itertools
 
+from BackEnd.Game import State
 from BackEnd.Piece import Piece
 
 
@@ -10,10 +11,11 @@ class Board:
 
     def __init__(self):
         self.pieces = [[] for _ in range(24)]
+
         self.black_bared_off = 0
-        self.black_captured = 0
+        self.black_captured = []
         self.white_bared_off = 0
-        self.white_captured = 0
+        self.white_captured = []
         self.initialise_board()
 
     def initialise_board(self):
@@ -33,17 +35,22 @@ class Board:
         return [piece for piece in itertools.chain.from_iterable(self.pieces)]
 
     def move(self, piece, destination):
-        if len(self.pieces[destination][-1]) > 0:
-            if self.pieces[destination][-1] != piece.colour:
-                if self.pieces[destination][-1] == 'b':
-                    self.black_captured += 1
-                elif self.pieces[destination][-1] == 'w':
-                    self.white_captured += 1
+        state = None
+        if len(self.pieces[destination]) > 0:
+            if self.pieces[destination][-1].colour != piece.colour:
                 self.pieces[destination][-1].captured = True
-            return "capture"
-
+                if self.pieces[destination][-1].colour == 'b':
+                    self.pieces[destination][-1].loc = (24, 24)
+                    self.black_captured.append(self.pieces[destination].pop())
+                elif self.pieces[destination][-1].colour == 'w':
+                    self.pieces[destination][-1].loc = (24, 25)
+                    self.white_captured.append(self.pieces[destination].pop())
+                state = State.captured
+        else:
+            state = State.moved
         self.pieces[destination].append(self.pieces[piece.loc[0]].pop())
         piece.move((destination, len(self.pieces[destination]) - 1))
+        return state
 
     def can_bear_off(self):
         return False
@@ -71,8 +78,16 @@ class Board:
         dest1, dest2, dest3, dest4 = self.get_destinations(piece, dice)
         if self.can_bear_off():
             pass
-        elif self.captured():
-            pass
+
+        elif len(self.white_captured) > 0 and piece.colour == 'w':
+            if self.white_captured[-1] != piece:
+                return []
+            return self.get_bear_on_moves(dice, piece.colour)
+        elif len(self.black_captured) > 0 and piece.colour == 'b':
+            if self.black_captured[-1] != piece:
+                return []
+            return self.get_bear_on_moves(dice, piece.colour)
+
         else:
             m1_available, m2_available = False, False
             if 0 <= dest1 <= 23 and (len(self.pieces[dest1]) <= 1 or (self.pieces[dest1][-1]).colour == piece.colour):
@@ -91,19 +106,25 @@ class Board:
                 available_moves.append(dest4)
         return set(available_moves)
 
+    def get_bear_on_moves(self, dice, colour):
+        all_available_moves = []
+        if len(self.black_captured) >= 1 and colour == 'b':
+            for die in set(dice):
+                if len(self.pieces[die - 1]) <= 1 or self.pieces[die][-1].colour == 'b':
+                    all_available_moves.append(die)
+        elif len(self.white_captured) >= 1 and colour == 'w':
+            for die in set(dice):
+                if len(self.pieces[24 - die]) <= 1 or self.pieces[die][-1].colour == 'w':
+                    all_available_moves.append(die)
+
+        return all_available_moves
+
     def get_all_available_moves(self, colour, dice):
         all_available_moves = []
-
-        if self.black_captured >= 1 and colour == 'b':
-            pass
-        elif self.white_captured >= 1 and colour == 'w':
-            pass
-
-        else:
-            for col in self.pieces:
-                if len(col) > 0 and col[-1].colour == colour:
-                    all_available_moves.extend(self.get_available_moves(col[-1], dice))
-            return all_available_moves
+        for col in self.pieces:
+            if len(col) > 0 and col[-1].colour == colour:
+                all_available_moves.extend(self.get_available_moves(col[-1], dice))
+        return set(all_available_moves)
 
     def bear_off(self):
         pass

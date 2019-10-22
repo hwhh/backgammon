@@ -38,7 +38,13 @@ class GUI:
 
     @staticmethod
     def pos_to_screen(board_location, distance):
-        if board_location[0] < 6:
+
+        if board_location[0] == 24 and board_location[1] == 24:
+            x, y = 580, 420
+        elif board_location[0] == 24 and board_location[1] == 25:
+            x, y = 580, 480
+
+        elif board_location[0] < 6:
             x, y = abs((board_location[0] * 90) - 1120), (765 - (distance * (board_location[1])))
         elif 6 <= board_location[0] < 12:
             x, y = abs((board_location[0] * 90) - 1065), (765 - (distance * (board_location[1])))
