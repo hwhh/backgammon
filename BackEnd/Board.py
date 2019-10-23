@@ -1,8 +1,8 @@
 import copy
 import itertools
 
-from BackEnd.Game import State
 from BackEnd.Piece import Piece
+from BackEnd.Utilities.State import StateType, State
 
 
 class Board:
@@ -39,21 +39,21 @@ class Board:
         if len(self.pieces[destination]) > 0:
             if self.pieces[destination][-1].colour != piece.colour:
                 self.pieces[destination][-1].captured = True
+                state = State(StateType.captured, self.pieces[destination][-1])
                 if self.pieces[destination][-1].colour == 'b':
                     self.pieces[destination][-1].loc = (24, 24)
                     self.black_captured.append(self.pieces[destination].pop())
                 elif self.pieces[destination][-1].colour == 'w':
                     self.pieces[destination][-1].loc = (24, 25)
                     self.white_captured.append(self.pieces[destination].pop())
-                state = State.captured
         else:
-            state = State.moved
+            state = State(StateType.moved)
         self.pieces[destination].append(self.pieces[piece.loc[0]].pop())
         piece.move((destination, len(self.pieces[destination]) - 1))
         return state
 
     def can_bear_off(self):
-        return False
+        pass
 
     def get_destinations(self, piece, die):
         dest1, dest2, dest3, dest4 = None, None, None, None

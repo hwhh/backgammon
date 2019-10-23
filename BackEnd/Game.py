@@ -53,7 +53,7 @@ class Game:
                 return State(StateType.rolled)
 
         # State rolling dice need to return the dice
-        if state == StateType.not_rolled and action.type == ActionType.roll:
+        if state.type == StateType.not_rolled and action.type == ActionType.roll:
             logging.info("State = Not Rolled and Action = Roll")
             self.roll_dice()
             available_moves = self.board.get_all_available_moves(self.turn, self.current_die[:2])
@@ -64,7 +64,7 @@ class Game:
             return State(StateType.rolled)
 
         # args[0] = piece TODO fix displaying available moves
-        if state == StateType.rolled and action.type == ActionType.select:
+        if state.type == StateType.rolled and action.type == ActionType.select:
             logging.info("State = Rolled and Action = Select")
 
             source = action.extras[0]['source']  # TODO this is not correct
@@ -79,15 +79,14 @@ class Game:
             else:
                 self.front_end.clear_extras()
 
-        if state == State(StateType.rolled) and action.type == ActionType.move:
+        if state.type == StateType.rolled and action.type == ActionType.move:
             self.update_front_end([(self.front_end.clear_extras, []),
                                    (self.front_end.remove_highlight_piece, []),
                                    (self.front_end.remove_highlight_moves, [])])
 
             return State(StateType.rolled)
 
-        # args[0] = source args[1] = dest
-        if state == State(StateType.selected) and action.type == ActionType.move:
+        if state.type == StateType.selected and action.type == ActionType.move:
             logging.info("State = Selected and Action = Move")
 
             source = action.extras[0]['source']
@@ -98,7 +97,6 @@ class Game:
             if piece.colour == self.turn and destination in available_moves:
                 move = abs(source - destination)
                 logging.info("\t\tMove was: " + str(move))
-                # Find what die combinations where used
                 if move in self.current_die:
                     self.current_die.remove(move)
                 elif self.doubles:
@@ -108,8 +106,10 @@ class Game:
 
                 old_loc = piece.loc
                 next_state = self.board.move(piece, destination)
-                if next_state == StateType.captured:
-                    self.update_front_end([(self.front_end.update_piece, [self.b, old_loc])])
+
+                if next_state.type == StateType.captured:
+                    logging.info("\t\t" + str(next_state.extras[0]) + " was captured: ")
+                    self.update_front_end([(self.front_end.update_piece, [next_state.extras[0], old_loc])])
 
                 self.history.append(self.board.copy())
 
