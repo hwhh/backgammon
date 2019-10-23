@@ -1,11 +1,6 @@
-import enum
-import math
-import queue
+import pygame
 
-import pygame, random, time
-from pygame import font
-
-from BackEnd.Action import Action, ActionType
+from BackEnd.Utilities.Action import Action, ActionType
 
 WHITE = (255, 255, 255)
 WOOD = (200, 200, 150)
@@ -235,16 +230,13 @@ class GUI:
     def create_action(self, event):
         index = self.screen_to_pos(event)
         if event.button == 1 and self.dice_rolled(event):
-            # self.action = Action(ActionType.roll)
             return Action(ActionType.roll)
 
         elif event.button == 1 and self.piece_selected(index, event) and 'source' not in self.extras:
             self.extras['source'] = self.screen_to_pos(event)
-            # self.action = Action(ActionType.select, self.extras)
             return Action(ActionType.select, self.extras)
 
         elif event.button == 1:
             if 'source' in self.extras:
                 self.extras['destination'] = self.screen_to_pos(event)
-            # self.action = Action(ActionType.move, self.extras)
             return Action(ActionType.move, self.extras)
