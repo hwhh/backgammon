@@ -107,7 +107,7 @@ class Game:
                 old_loc = piece.loc
                 next_state = self.board.move(piece, destination)
 
-                if next_state.type == StateType.captured:
+                if next_state is not None and next_state.type == StateType.captured:
                     logging.info("\t\t" + str(next_state.extras[0]) + " was captured: ")
                     self.update_front_end([(self.front_end.update_piece, [next_state.extras[0], old_loc])])
 
