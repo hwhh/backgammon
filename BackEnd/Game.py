@@ -13,6 +13,7 @@ logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
 # TODO add undo function
 # TODO at the moment if user uses both die, check intermediate moves to ensure nothing is captured
 # TODO you need to make every move, therefore if there is a way to use both die you have to do that
+# TODO bug when doubles are rolled can go to jump columns
 class Game:
 
     def __init__(self, front_end, player1, player2):
@@ -107,9 +108,9 @@ class Game:
                 old_loc = piece.loc
                 next_state = self.board.move(piece, destination)
 
-                if next_state is not None and next_state.type == StateType.captured:
+                if next_state.type == StateType.captured:
                     logging.info("\t\t" + str(next_state.extras[0]) + " was captured: ")
-                    self.update_front_end([(self.front_end.update_piece, [next_state.extras[0], old_loc])])
+                    self.update_front_end([(self.front_end.draw_captured, [next_state.extras[0]])])
 
                 self.history.append(self.board.copy())
 

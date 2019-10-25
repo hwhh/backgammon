@@ -11,7 +11,6 @@ FONT_SIZE = 25
 CIRCLE_RAD = 25  # TODO get rid of magic numbers
 CIRCLE_DIAM = CIRCLE_RAD * 2
 BOARDER_WIDTH = 28
-
 HOME_WIDTH = 111
 BAR_WIDTH = 53
 SPIKE_WIDTH = 90
@@ -22,21 +21,19 @@ TRIANGLE_WIDTH = 70
 TRIANGLE_OUTLINE = 3
 RIGHT_HALF = BOARD_WIDTH - (HOME_WIDTH + CIRCLE_DIAM)
 LEFT_HALF = BOARD_WIDTH - (HOME_WIDTH + CIRCLE_DIAM + BAR_WIDTH)
-
 QUAD_1 = 5
 QUAD_2 = 11
 QUAD_3 = 17
 QUAD_4 = 23
 
 DICE_WIDTH = 40
-DICE_HEIGHT = 40
+DICE_HEIGHT = DICE_WIDTH
 
 ROLL_BUTTON_WIDTH = ""
 ROLL_BUTTON_HEIGHT = ""
 
 
-# TODO after the event has taken place and board is updated hand back the board
-# TODO instead of pooling create a pipe?
+# TODO remove more magic numbers
 class GUI:
 
     def __init__(self):
@@ -62,12 +59,6 @@ class GUI:
 
     @staticmethod
     def pos_to_screen(board_location, distance):
-
-        # if board_location[0] == 24 and board_location[1] == 24:
-        #     x, y = 580, 420
-        # elif board_location[0] == 24 and board_location[1] == 25:
-        #     x, y = 580, 480
-
         if board_location[0] <= QUAD_1:  # In first quadrant
 
             x = abs((board_location[0] * SPIKE_WIDTH) - RIGHT_HALF)
@@ -89,9 +80,9 @@ class GUI:
         # TODO fix bug with distance shifting the counter off the edge of board
 
         if board_location[0] <= 11 and y < (BOARD_HEIGHT / 2) + CIRCLE_RAD:
-            y = 420
+            y = (BOARD_HEIGHT / 2) + CIRCLE_RAD
         if board_location[0] > 11 and y > (BOARD_HEIGHT / 2) - CIRCLE_RAD:
-            y = 400
+            y = (BOARD_HEIGHT / 2) - CIRCLE_RAD
         return x, y
 
     @staticmethod
@@ -106,7 +97,7 @@ class GUI:
                     LEFT_HALF - (i * SPIKE_WIDTH)) + CIRCLE_DIAM:
                 x = i
                 break
-        if event.pos[1] <= 400 and x is not None:
+        if event.pos[1] <= (BOARD_HEIGHT / 2) and x is not None:
             x = 23 - x
         return x
 
@@ -206,8 +197,13 @@ class GUI:
             pygame.draw.circle(self.display, WOOD if piece.colour == 'w' else BLACK, location, CIRCLE_RAD)
         pygame.display.flip()
 
-    def draw_captured(self):
-        pass
+    def draw_captured(self, piece):
+        x = (BOARD_WIDTH - (HOME_WIDTH + BOARDER_WIDTH)) // 2
+        if piece.colour == 'w':
+            no_captured = self.board.white_captured
+            y =
+        else:
+            no_captured = self.board.white_captured
 
     def draw_completed(self):
         pass
@@ -231,7 +227,7 @@ class GUI:
 
     def update_row(self, loc):
         x, y = self.pos_to_screen((loc, 0), 0)
-        if loc <= 5 or loc >= 18:
+        if loc <= 5 or loc >= 18:  # TODO what is this ?
             x = x + 2
 
         distance = self.calculate_spacing(loc)

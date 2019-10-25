@@ -35,7 +35,7 @@ class Board:
         return [piece for piece in itertools.chain.from_iterable(self.pieces)]
 
     def move(self, piece, destination):
-        state = None
+        state = State(StateType.moved)
         if len(self.pieces[destination]) > 0:
             if self.pieces[destination][-1].colour != piece.colour:
                 self.pieces[destination][-1].captured = True
@@ -46,8 +46,6 @@ class Board:
                 elif self.pieces[destination][-1].colour == 'w':
                     self.pieces[destination][-1].loc = (24, 25)
                     self.white_captured.append(self.pieces[destination].pop())
-        else:
-            state = State(StateType.moved)
         self.pieces[destination].append(self.pieces[piece.loc[0]].pop())
         piece.move((destination, len(self.pieces[destination]) - 1))
         return state
