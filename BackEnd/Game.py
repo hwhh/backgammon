@@ -73,7 +73,7 @@ class Game:
             piece = self.board.pieces[source][-1]
             if piece.colour == self.turn:
                 logging.info("\t\tPiece selected: " + str(piece.loc))
-                available_moves = self.board.get_available_moves(piece, self.current_die[:2])
+                available_moves = self.board.get_available_moves(piece, self.current_die)
                 self.update_front_end([(self.front_end.highlight_piece, [piece]),
                                        (self.front_end.highlight_moves, [available_moves])])
                 return State(StateType.selected)
@@ -171,7 +171,10 @@ class Game:
         self.update_front_end([(self.front_end.display_turn, [self.turn])])
 
     def roll_dice(self):
+
         die = (random.randint(1, 6), random.randint(1, 6))
+        if random.randint(1, 2) % 2 == 0:
+            die = 3, 3
         self.current_die = [die[0], die[1]]
         if die[0] == die[1]:
             self.current_die.extend([die[0], die[1]])

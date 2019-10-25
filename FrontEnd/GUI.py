@@ -28,6 +28,8 @@ QUAD_4 = 23
 
 DICE_WIDTH = 40
 DICE_HEIGHT = DICE_WIDTH
+DICE1_X = ((BOARD_WIDTH - (HOME_WIDTH + BOARDER_WIDTH)) // 2) - ((DICE_WIDTH + 3) // 2)
+DICE2_X = ((BOARD_WIDTH - (HOME_WIDTH + BOARDER_WIDTH)) // 2) + ((DICE_WIDTH + 3) // 2)
 
 ROLL_BUTTON_WIDTH = ""
 ROLL_BUTTON_HEIGHT = ""
@@ -154,16 +156,20 @@ class GUI:
         pygame.display.flip()
 
     def display_dice(self, die1, die2):
-        # TODO if doubles display 4 dice
-        gui_die1 = pygame.draw.rect(self.display, WHITE, (540, 420, DICE_WIDTH, DICE_HEIGHT))
-        self.display.blit(pygame.font.SysFont('Arial', FONT_SIZE).render(str(die1), True, (0, 0, 0)), (555, 435))
-        gui_die2 = pygame.draw.rect(self.display, WHITE, (600, 420, DICE_WIDTH, DICE_HEIGHT))
-        self.display.blit(pygame.font.SysFont('Arial', FONT_SIZE).render(str(die2), True, (0, 0, 0)), (615, 435))
+        y = (BOARD_HEIGHT // 2) - (DICE_HEIGHT // 2)
+        # TODO if doubles display 4 dice and change where the dice are displayed
+        gui_die1 = pygame.draw.rect(self.display, WHITE, (DICE1_X, y, DICE_WIDTH, DICE_HEIGHT))
+        self.display.blit(pygame.font.SysFont('Arial', FONT_SIZE).render(str(die1), True, (0, 0, 0)),
+                          ((DICE1_X + (DICE_WIDTH // 2) - 5), (y + (DICE_HEIGHT // 2) - 5)))
+        gui_die2 = pygame.draw.rect(self.display, WHITE, (DICE2_X, y, DICE_WIDTH, DICE_HEIGHT))
+        self.display.blit(pygame.font.SysFont('Arial', FONT_SIZE).render(str(die2), True, (0, 0, 0)),
+                          ((DICE2_X + (DICE_WIDTH // 2) - 5), (y + (DICE_HEIGHT // 2) - 5)))
         pygame.display.update([gui_die1, gui_die2])
 
     def clear_dice(self):
-        rect1 = self.display.blit(self.background, (540, 420), [540, 420, DICE_WIDTH, DICE_HEIGHT])
-        rect2 = self.display.blit(self.background, (600, 420), [600, 420, DICE_WIDTH, DICE_HEIGHT])
+        y = (BOARD_HEIGHT // 2) - (DICE_HEIGHT // 2)
+        rect1 = self.display.blit(self.background, (DICE1_X, y), [DICE1_X, y, DICE_WIDTH, DICE_HEIGHT])
+        rect2 = self.display.blit(self.background, (DICE2_X, y), [DICE2_X, y, DICE_WIDTH, DICE_HEIGHT])
         pygame.display.update([rect1, rect2])
 
     def highlight_piece(self, piece):
@@ -198,12 +204,15 @@ class GUI:
         pygame.display.flip()
 
     def draw_captured(self, piece):
-        x = (BOARD_WIDTH - (HOME_WIDTH + BOARDER_WIDTH)) // 2
+        x = ((BOARD_WIDTH - (HOME_WIDTH + BOARDER_WIDTH)) // 2) + (CIRCLE_RAD + 3)
         if piece.colour == 'w':
-            no_captured = self.board.white_captured
-            y =
+            no_captured = len(self.board.white_captured)
+            y = ((BOARD_HEIGHT - BOARDER_WIDTH) // 2) + ((no_captured + 1) * CIRCLE_DIAM)
         else:
-            no_captured = self.board.white_captured
+            no_captured = len(self.board.black_captured)
+            y = ((BOARD_HEIGHT - BOARDER_WIDTH) // 2) - ((no_captured + 1) * CIRCLE_DIAM)
+        pygame.draw.circle(self.display, WOOD if piece.colour == 'w' else BLACK, (x, y), CIRCLE_RAD)
+        pygame.display.flip()
 
     def draw_completed(self):
         pass
@@ -289,7 +298,6 @@ class GUI:
             self.clock.tick(60)
             for event in pygame.event.get():
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    print(str(event.pos[0]) + " " + str(event.pos[1]))
                     # Player vs Player
                     if len(self.players) == 2:
                         if self.turn == self.players[0].colour:

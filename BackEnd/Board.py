@@ -53,23 +53,25 @@ class Board:
     def can_bear_off(self):
         pass
 
-    def get_destinations(self, piece, die):
-        dest1, dest2, dest3, dest4 = None, None, None, None
+    @staticmethod
+    def get_destinations(piece, dice):
+        destinations = [None, None, None, None]
+
+        def get_destinations_for_colour(operator):
+            destinations[0] = operator(piece.loc[0], dice[0])
+            if len(dice) > 1:
+                if len(dice) > 2:  # This means doubles
+                    for i, die in enumerate(dice):
+                        destinations[i] = operator(piece.loc[0], (dice[0] * (i + 1)))
+                else:
+                    destinations[1] = operator(piece.loc[0], dice[1])
+                    destinations[2] = operator(piece.loc[0], (dice[0] + dice[1]))
+
         if piece.colour == 'w':
-            dest1 = piece.loc[0] - die[0]
-            if len(die) > 1:
-                dest2 = piece.loc[0] - die[1]
-                dest3 = piece.loc[0] - (die[0] + die[1])
-                if die[0] == die[1]:
-                    dest4 = piece.loc[0] - (die[0] * 4)
+            get_destinations_for_colour(lambda x, y: (x - y))
         elif piece.colour == 'b':
-            dest1 = piece.loc[0] + die[0]
-            if len(die) > 1:
-                dest2 = piece.loc[0] + die[1]
-                dest3 = piece.loc[0] + (die[0] + die[1])
-                if die[0] == die[1]:
-                    dest4 = piece.loc[0] + (die[0] * 4)
-        return dest1, dest2, dest3, dest4
+            get_destinations_for_colour(lambda x, y: (x + y))
+        return destinations[0], destinations[1], destinations[2], destinations[3]
 
     def get_available_moves(self, piece, dice):  # TODO check for doubles
         available_moves = []
@@ -87,7 +89,7 @@ class Board:
             return self.get_bear_on_moves(dice, piece.colour)
 
         else:
-            m1_available, m2_available = False, False
+            m1_available, m2_available, m3_available = False, False, False
             if 0 <= dest1 <= 23 and (len(self.pieces[dest1]) <= 1 or (self.pieces[dest1][-1]).colour == piece.colour):
                 m1_available = True
                 available_moves.append(dest1)
@@ -97,11 +99,13 @@ class Board:
                 available_moves.append(dest2)
             if dest3 is not None and 0 <= dest3 <= 23 and (
                     len(self.pieces[dest3]) <= 1 or (self.pieces[dest3][-1]).colour == piece.colour):
-                if m1_available or m2_available:
+                if ((m1_available or m2_available) and dice[0] != dice[1]) or (m1_available and m2_available):
                     available_moves.append(dest3)
+                    m3_available = True
             if dest4 is not None and 0 <= dest4 <= 23 and (
                     len(self.pieces[dest4]) <= 1 or (self.pieces[dest4][-1]).colour == piece.colour):
-                available_moves.append(dest4)
+                if m3_available:
+                    available_moves.append(dest4)
         return set(available_moves)
 
     def get_bear_on_moves(self, dice, colour):
@@ -118,10 +122,14 @@ class Board:
         return all_available_moves
 
     def get_all_available_moves(self, colour, dice):
-        all_available_moves = []
-        for col in self.pieces:
-            if len(col) > 0 and col[-1].colour == colour:
-                all_available_moves.extend(self.get_available_moves(col[-1], dice))
+        if (len(self.black_captured) > 0 and colour == 'b') or (len(self.white_captured) > 0 and colour == 'w'):
+            all_available_moves = self.get_bear_on_moves(dice, colour)
+        else:
+            all_available_moves = []
+            for col in self.pieces:
+                if len(col) > 0 and col[-1].colour == colour:
+                    all_available_moves.extend(self.get_available_moves(col[-1], dice))
+
         return set(all_available_moves)
 
     def bear_off(self):
