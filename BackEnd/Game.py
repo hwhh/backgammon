@@ -13,7 +13,8 @@ logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
 # TODO add undo function
 # TODO at the moment if user uses both die, check intermediate moves to ensure nothing is captured
 # TODO you need to make every move, therefore if there is a way to use both die you have to do that
-# TODO bug when doubles are rolled can go to jump columns
+# TODO BUG - somthing wired happens if rolled doubles when tring to bear on - maybe because there were no available moves
+# TODO Add notification of no available moves
 class Game:
 
     def __init__(self, front_end, player1, player2):
@@ -55,10 +56,16 @@ class Game:
         if state.type == StateType.not_rolled and action.type == ActionType.roll:
             logging.info("State = Not Rolled and Action = Roll")
             self.roll_dice()
-            available_moves = self.board.get_all_available_moves(self.turn, self.current_die[:2])
+            available_moves = self.board.get_all_available_moves(self.turn, self.current_die[
+                                                                            :2])  # TODO this is calculated twice, here and bellow - could just do it once?
             self.update_front_end([(self.front_end.display_dice, [self.current_die[0], self.current_die[1]])])
             if len(available_moves) == 0:
+                # TODO display no moves
+                logging.info("\t\tNo more available moves - switching turn")
+
                 self.change_turn()
+                self.current_die = []
+                self.update_front_end([(self.front_end.clear_extras, [])])
 
                 return State(StateType.not_rolled)
             return State(StateType.rolled)
@@ -67,9 +74,9 @@ class Game:
             logging.info("State = Rolled and Action = Select")
             source = action.extras[0]['source']
             piece = None
-            if source == 24:  # black trying to bear on
+            if len(self.board.black_captured) >= 0 and source == 24:  # black trying to bear on
                 piece = self.board.black_captured[-1]
-            elif source == 25:  # white trying to bear on
+            elif len(self.board.white_captured) >= 0 and source == 25:  # white trying to bear on
                 piece = self.board.white_captured[-1]
             elif (len(self.board.white_captured) == 0 and self.turn == 'w') or (
                     len(self.board.black_captured) == 0 and self.turn == 'b'):
@@ -96,7 +103,15 @@ class Game:
             source = action.extras[0]['source']
             destination = action.extras[0]['destination']
 
-            piece = self.board.pieces[source][-1]
+            if source == 24:
+                piece = self.board.black_captured[-1]
+                source = -1
+            elif source == 25:
+                piece = self.board.white_captured[-1]
+                source = 24
+            else:
+                piece = self.board.pieces[source][-1]
+
             available_moves = self.board.get_available_moves(piece, self.current_die)
             if piece.colour == self.turn and destination in available_moves:
                 move = abs(source - destination)
@@ -124,7 +139,7 @@ class Game:
                 # TODO Add the board to history before making the move
                 if len(self.current_die) == 0 or not self.moves_available():
                     self.change_turn()
-                    logging.info("\t\tChanged turn.")
+                    logging.info("\t\tChanged turn to: " + str(self.turn))
                     self.front_end.clear_dice()
                     return State(StateType.not_rolled)
                 else:
@@ -173,10 +188,7 @@ class Game:
         self.update_front_end([(self.front_end.display_turn, [self.turn])])
 
     def roll_dice(self):
-
         die = (random.randint(1, 6), random.randint(1, 6))
-        if random.randint(1, 2) % 2 == 0:
-            die = 3, 3
         self.current_die = [die[0], die[1]]
         if die[0] == die[1]:
             self.current_die.extend([die[0], die[1]])

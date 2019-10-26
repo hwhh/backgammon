@@ -66,7 +66,7 @@ class GUI:
             y = ((BOARD_HEIGHT - BOARDER_WIDTH) // 2) - ((board_location[1] + 1) * CIRCLE_DIAM)
         elif board_location[0] == 25:  # white  captured
             x = ((BOARD_WIDTH - (HOME_WIDTH + BOARDER_WIDTH)) // 2) + (CIRCLE_RAD + 3)
-            y = ((BOARD_HEIGHT - BOARDER_WIDTH) // 2) - ((board_location[1] + 1) * CIRCLE_DIAM)
+            y = ((BOARD_HEIGHT - BOARDER_WIDTH) // 2) + ((board_location[1] + 2) * CIRCLE_DIAM)
         elif board_location[0] <= QUAD_1:  # In first quadrant
             x = abs((board_location[0] * SPIKE_WIDTH) - RIGHT_HALF)
             y = (BOARD_HEIGHT - (BOARDER_WIDTH + CIRCLE_RAD) - (distance * (board_location[1])))
@@ -80,10 +80,10 @@ class GUI:
             x = abs((abs(board_location[0] - 23) * SPIKE_WIDTH) - RIGHT_HALF)
             y = ((CIRCLE_RAD + BOARDER_WIDTH) + (distance * (board_location[1])))
 
-        if board_location[0] <= 11 and y < (BOARD_HEIGHT / 2) + CIRCLE_RAD:
-            y = (BOARD_HEIGHT / 2) + CIRCLE_RAD
-        if board_location[0] > 11 and y > (BOARD_HEIGHT / 2) - CIRCLE_RAD:
-            y = (BOARD_HEIGHT / 2) - CIRCLE_RAD
+        if board_location[0] <= 11 and y < (BOARD_HEIGHT / 2) + CIRCLE_RAD and board_location[0] == 24:
+            y = (BOARD_HEIGHT // 2) + CIRCLE_RAD
+        if board_location[0] > 11 and y > (BOARD_HEIGHT / 2) - CIRCLE_RAD and board_location[0] != 25:
+            y = (BOARD_HEIGHT // 2) - CIRCLE_RAD
         return x, y
 
     @staticmethod
@@ -155,11 +155,11 @@ class GUI:
     def captured_piece_selected(self, event, colour):
         x = ((BOARD_WIDTH - (HOME_WIDTH + BOARDER_WIDTH)) // 2) + (CIRCLE_RAD + 3)
         if colour == 'w':
-            y = ((BOARD_HEIGHT - BOARDER_WIDTH) // 2) + (2 * CIRCLE_DIAM)
+            y = ((BOARD_HEIGHT - BOARDER_WIDTH) // 2) + ((len(self.board.white_captured) + 1) * CIRCLE_DIAM)
             if (x - 25) <= event.pos[0] <= (x + 25) and (y - 25) <= event.pos[1] <= (y + 25):
                 return len(self.board.white_captured) >= 1
         elif colour == 'b':
-            y = ((BOARD_HEIGHT - BOARDER_WIDTH) // 2) - (2 * CIRCLE_DIAM)
+            y = ((BOARD_HEIGHT - BOARDER_WIDTH) // 2) - (len(self.board.black_captured) * CIRCLE_DIAM)
             if (x - 25) <= event.pos[0] <= (x + 25) and (y - 25) <= event.pos[1] <= (y + 25):
                 return len(self.board.black_captured) >= 1
         return False
@@ -221,7 +221,7 @@ class GUI:
     def draw_captured(self, piece):
         x = ((BOARD_WIDTH - (HOME_WIDTH + BOARDER_WIDTH)) // 2) + (CIRCLE_RAD + 3)
         if piece.colour == 'w':
-            y = ((BOARD_HEIGHT - BOARDER_WIDTH) // 2) + ((piece.loc[1] + 1) * CIRCLE_DIAM)
+            y = ((BOARD_HEIGHT - BOARDER_WIDTH) // 2) + ((piece.loc[1] + 2) * CIRCLE_DIAM)
         else:
             y = ((BOARD_HEIGHT - BOARDER_WIDTH) // 2) - ((piece.loc[1] + 1) * CIRCLE_DIAM)
         pygame.draw.circle(self.display, WOOD if piece.colour == 'w' else BLACK, (x, y), CIRCLE_RAD)
@@ -229,7 +229,11 @@ class GUI:
 
     def update_piece(self, piece, old_loc):
         # Update old row
-        if len(self.board.pieces[old_loc[0]]) >= 7:
+
+        if (old_loc[0] == 24 and len(self.board.black_captured) >= 7) or \
+                (old_loc[0] == 25 and len(self.board.white_captured) >= 7):
+            self.update_row(old_loc[0])
+        elif old_loc[0] != 24 and old_loc[0] != 25 and len(self.board.pieces[old_loc[0]]) >= 7:
             self.update_row(old_loc[0])
         else:
             location = self.pos_to_screen(old_loc, self.calculate_spacing(old_loc[0]))
@@ -254,16 +258,16 @@ class GUI:
 
         if loc <= 11:  # Bottom half
             self.display.blit(self.background,
-                              (x - (TRIANGLE_WIDTH / 2) - 1,
+                              (x - (TRIANGLE_WIDTH // 2) - 3,
                                y - (height - (CIRCLE_DIAM - BOARDER_WIDTH) - TRIANGLE_OUTLINE - 2)),
-                              [x - (TRIANGLE_WIDTH / 2) - 1,
+                              [x - (TRIANGLE_WIDTH // 2) - 3,
                                y - (height - (CIRCLE_DIAM - BOARDER_WIDTH) - TRIANGLE_OUTLINE - 2),
-                               TRIANGLE_WIDTH + TRIANGLE_OUTLINE, height])
+                               TRIANGLE_WIDTH + TRIANGLE_OUTLINE + 3, height])
         else:  # Top half
             self.display.blit(self.background,
-                              (x - (TRIANGLE_WIDTH / 2) - 1, y - (CIRCLE_DIAM - BOARDER_WIDTH) - TRIANGLE_OUTLINE - 1),
-                              [x - (TRIANGLE_WIDTH / 2) - 1, y - (CIRCLE_DIAM - BOARDER_WIDTH) - TRIANGLE_OUTLINE - 1,
-                               TRIANGLE_WIDTH + TRIANGLE_OUTLINE, height])
+                              (x - (TRIANGLE_WIDTH // 2) - 3, y - (CIRCLE_DIAM - BOARDER_WIDTH) - TRIANGLE_OUTLINE - 1),
+                              [x - (TRIANGLE_WIDTH // 2) - 3, y - (CIRCLE_DIAM - BOARDER_WIDTH) - TRIANGLE_OUTLINE - 1,
+                               TRIANGLE_WIDTH + TRIANGLE_OUTLINE + 3, height])
 
         for piece in self.board.pieces[loc]:
             location = self.pos_to_screen(piece.loc, distance)
@@ -280,14 +284,14 @@ class GUI:
 
             if move <= 11:  # Bottom half
                 rect = pygame.draw.polygon(self.display, GREEN,
-                                           [(x - (TRIANGLE_WIDTH / 2), y + BOARDER_WIDTH - TRIANGLE_OUTLINE),
-                                            (x + (TRIANGLE_WIDTH / 2), y + BOARDER_WIDTH - TRIANGLE_OUTLINE),
+                                           [(x - (TRIANGLE_WIDTH // 2), y + BOARDER_WIDTH - TRIANGLE_OUTLINE),
+                                            (x + (TRIANGLE_WIDTH // 2), y + BOARDER_WIDTH - TRIANGLE_OUTLINE),
                                             (x, y - TRIANGLE_HEIGHT)], TRIANGLE_OUTLINE)
             else:  # Top half
                 rect = pygame.draw.polygon(self.display, GREEN,
-                                           [(x - (TRIANGLE_WIDTH / 2),
+                                           [(x - (TRIANGLE_WIDTH // 2),
                                              y - (CIRCLE_DIAM - BOARDER_WIDTH + TRIANGLE_OUTLINE)),
-                                            (x + (TRIANGLE_WIDTH / 2),
+                                            (x + (TRIANGLE_WIDTH // 2),
                                              y - (CIRCLE_DIAM - BOARDER_WIDTH + TRIANGLE_OUTLINE)),
                                             (x, y + TRIANGLE_HEIGHT)], TRIANGLE_OUTLINE)
             rects.append(rect)

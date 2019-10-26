@@ -46,7 +46,13 @@ class Board:
                 elif self.pieces[destination][-1].colour == 'w':
                     self.pieces[destination][-1].loc = (25, len(self.white_captured))
                     self.white_captured.append(self.pieces[destination].pop())
-        self.pieces[destination].append(self.pieces[piece.loc[0]].pop())
+        if piece.loc[0] == 24:
+            self.pieces[destination].append(self.black_captured.pop())
+        elif piece.loc[0] == 25:
+            self.pieces[destination].append(self.white_captured.pop())
+        else:
+            self.pieces[destination].append(self.pieces[piece.loc[0]].pop())
+
         piece.move((destination, len(self.pieces[destination]) - 1))
         return state
 
@@ -95,8 +101,9 @@ class Board:
                 available_moves.append(dest1)
             if dest2 is not None and 0 <= dest2 <= 23 and (
                     len(self.pieces[dest2]) <= 1 or (self.pieces[dest2][-1]).colour == piece.colour):
-                m2_available = True
-                available_moves.append(dest2)
+                if len(dice) > 1 and ((dice[0] != dice[1]) or (dice[0] == dice[1] and m1_available)):
+                    m2_available = True
+                    available_moves.append(dest2)
             if dest3 is not None and 0 <= dest3 <= 23 and (
                     len(self.pieces[dest3]) <= 1 or (self.pieces[dest3][-1]).colour == piece.colour):
                 if ((m1_available or m2_available) and dice[0] != dice[1]) or (m1_available and m2_available):
@@ -113,11 +120,11 @@ class Board:
         if len(self.black_captured) >= 1 and colour == 'b':
             for die in set(dice):
                 if len(self.pieces[die - 1]) <= 1 or self.pieces[die - 1][-1].colour == 'b':
-                    all_available_moves.append(die)
+                    all_available_moves.append(die - 1)
         elif len(self.white_captured) >= 1 and colour == 'w':
             for die in set(dice):
                 if len(self.pieces[24 - die]) <= 1 or self.pieces[24 - die][-1].colour == 'w':
-                    all_available_moves.append(die)
+                    all_available_moves.append(24 - die)
 
         return all_available_moves
 
@@ -139,9 +146,6 @@ class Board:
         pass
 
     def capture(self):
-        pass
-
-    def captured(self):
         pass
 
     def copy(self):
