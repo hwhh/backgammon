@@ -41,10 +41,10 @@ class Board:
                 self.pieces[destination][-1].captured = True
                 state = State(StateType.captured, self.pieces[destination][-1])
                 if self.pieces[destination][-1].colour == 'b':
-                    self.pieces[destination][-1].loc = (24, 24)
+                    self.pieces[destination][-1].loc = (24, len(self.black_captured))
                     self.black_captured.append(self.pieces[destination].pop())
                 elif self.pieces[destination][-1].colour == 'w':
-                    self.pieces[destination][-1].loc = (24, 25)
+                    self.pieces[destination][-1].loc = (25, len(self.white_captured))
                     self.white_captured.append(self.pieces[destination].pop())
         self.pieces[destination].append(self.pieces[piece.loc[0]].pop())
         piece.move((destination, len(self.pieces[destination]) - 1))
@@ -112,11 +112,11 @@ class Board:
         all_available_moves = []
         if len(self.black_captured) >= 1 and colour == 'b':
             for die in set(dice):
-                if len(self.pieces[die - 1]) <= 1 or self.pieces[die][-1].colour == 'b':
+                if len(self.pieces[die - 1]) <= 1 or self.pieces[die - 1][-1].colour == 'b':
                     all_available_moves.append(die)
         elif len(self.white_captured) >= 1 and colour == 'w':
             for die in set(dice):
-                if len(self.pieces[24 - die]) <= 1 or self.pieces[die][-1].colour == 'w':
+                if len(self.pieces[24 - die]) <= 1 or self.pieces[24 - die][-1].colour == 'w':
                     all_available_moves.append(die)
 
         return all_available_moves

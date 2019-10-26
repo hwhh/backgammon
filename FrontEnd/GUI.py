@@ -8,7 +8,7 @@ BLACK = (0, 0, 0)
 GREEN = (50, 205, 50, 50)
 
 FONT_SIZE = 25
-CIRCLE_RAD = 25  # TODO get rid of magic numbers
+CIRCLE_RAD = 25
 CIRCLE_DIAM = CIRCLE_RAD * 2
 BOARDER_WIDTH = 28
 HOME_WIDTH = 111
@@ -61,25 +61,24 @@ class GUI:
 
     @staticmethod
     def pos_to_screen(board_location, distance):
-        if board_location[0] <= QUAD_1:  # In first quadrant
-
+        if board_location[0] == 24:  # black captured
+            x = ((BOARD_WIDTH - (HOME_WIDTH + BOARDER_WIDTH)) // 2) + (CIRCLE_RAD + 3)
+            y = ((BOARD_HEIGHT - BOARDER_WIDTH) // 2) - ((board_location[1] + 1) * CIRCLE_DIAM)
+        elif board_location[0] == 25:  # white  captured
+            x = ((BOARD_WIDTH - (HOME_WIDTH + BOARDER_WIDTH)) // 2) + (CIRCLE_RAD + 3)
+            y = ((BOARD_HEIGHT - BOARDER_WIDTH) // 2) - ((board_location[1] + 1) * CIRCLE_DIAM)
+        elif board_location[0] <= QUAD_1:  # In first quadrant
             x = abs((board_location[0] * SPIKE_WIDTH) - RIGHT_HALF)
             y = (BOARD_HEIGHT - (BOARDER_WIDTH + CIRCLE_RAD) - (distance * (board_location[1])))
-
         elif QUAD_1 < board_location[0] <= QUAD_2:  # In second quadrant
             x = abs((board_location[0] * SPIKE_WIDTH) - LEFT_HALF)
             y = (BOARD_HEIGHT - (BOARDER_WIDTH + CIRCLE_RAD) - (distance * (board_location[1])))
-
         elif QUAD_2 < board_location[0] <= QUAD_3:  # In third quadrant
             x = abs((abs(board_location[0] - 23) * SPIKE_WIDTH) - LEFT_HALF)
             y = ((CIRCLE_RAD + BOARDER_WIDTH) + (distance * (board_location[1])))
-
         else:  # In fourth quadrant
             x = abs((abs(board_location[0] - 23) * SPIKE_WIDTH) - RIGHT_HALF)
             y = ((CIRCLE_RAD + BOARDER_WIDTH) + (distance * (board_location[1])))
-
-        # TODO draw number of counters stacked at this point
-        # TODO fix bug with distance shifting the counter off the edge of board
 
         if board_location[0] <= 11 and y < (BOARD_HEIGHT / 2) + CIRCLE_RAD:
             y = (BOARD_HEIGHT / 2) + CIRCLE_RAD
@@ -108,14 +107,18 @@ class GUI:
         return 575 <= event.pos[0] <= 622 and 790 <= event.pos[1] <= 820
 
     def calculate_spacing(self, x):
-        # TODO if the row exceeds 8, reblit entire row with smaller spacing
-        # TODO if the piece is captured or bared off. x
-
-        if len(self.board.pieces[x]) <= 7:
-
-            return 50
+        if x <= QUAD_4:
+            if len(self.board.pieces[x]) <= 7:
+                return 50
+            else:
+                return int(round(CIRCLE_DIAM - (len(self.board.pieces[x]) * 1.5)))
         else:
-            return int(round(CIRCLE_DIAM - (len(self.board.pieces[x]) * 1.5)))
+            if (x == 24 and len(self.board.black_captured) <= 7) or (x == 25 and len(self.board.white_captured) <= 7):
+                return 50
+            elif x == 24:
+                return int(round(CIRCLE_DIAM - (len(self.board.black_captured) * 1.5)))
+            elif x == 25:
+                return int(round(CIRCLE_DIAM - (len(self.board.white_captured) * 1.5)))
 
     def get_action(self):
         action = self.action
@@ -148,6 +151,18 @@ class GUI:
             else:
                 return (790 - (dis * len(self.board.pieces[x]))) <= event.pos[1] <= (
                         840 - (dis * len(self.board.pieces[x])))
+
+    def captured_piece_selected(self, event, colour):
+        x = ((BOARD_WIDTH - (HOME_WIDTH + BOARDER_WIDTH)) // 2) + (CIRCLE_RAD + 3)
+        if colour == 'w':
+            y = ((BOARD_HEIGHT - BOARDER_WIDTH) // 2) + (2 * CIRCLE_DIAM)
+            if (x - 25) <= event.pos[0] <= (x + 25) and (y - 25) <= event.pos[1] <= (y + 25):
+                return len(self.board.white_captured) >= 1
+        elif colour == 'b':
+            y = ((BOARD_HEIGHT - BOARDER_WIDTH) // 2) - (2 * CIRCLE_DIAM)
+            if (x - 25) <= event.pos[0] <= (x + 25) and (y - 25) <= event.pos[1] <= (y + 25):
+                return len(self.board.black_captured) >= 1
+        return False
 
     def remove_highlight_moves(self):
         if self.available_moves is not None:
@@ -206,16 +221,11 @@ class GUI:
     def draw_captured(self, piece):
         x = ((BOARD_WIDTH - (HOME_WIDTH + BOARDER_WIDTH)) // 2) + (CIRCLE_RAD + 3)
         if piece.colour == 'w':
-            no_captured = len(self.board.white_captured)
-            y = ((BOARD_HEIGHT - BOARDER_WIDTH) // 2) + ((no_captured + 1) * CIRCLE_DIAM)
+            y = ((BOARD_HEIGHT - BOARDER_WIDTH) // 2) + ((piece.loc[1] + 1) * CIRCLE_DIAM)
         else:
-            no_captured = len(self.board.black_captured)
-            y = ((BOARD_HEIGHT - BOARDER_WIDTH) // 2) - ((no_captured + 1) * CIRCLE_DIAM)
+            y = ((BOARD_HEIGHT - BOARDER_WIDTH) // 2) - ((piece.loc[1] + 1) * CIRCLE_DIAM)
         pygame.draw.circle(self.display, WOOD if piece.colour == 'w' else BLACK, (x, y), CIRCLE_RAD)
         pygame.display.flip()
-
-    def draw_completed(self):
-        pass
 
     def update_piece(self, piece, old_loc):
         # Update old row
@@ -236,7 +246,7 @@ class GUI:
 
     def update_row(self, loc):
         x, y = self.pos_to_screen((loc, 0), 0)
-        if loc <= 5 or loc >= 18:  # TODO what is this ?
+        if loc <= QUAD_1 or loc >= QUAD_3:  # TODO what is this ?
             x = x + 2
 
         distance = self.calculate_spacing(loc)
@@ -257,7 +267,7 @@ class GUI:
 
         for piece in self.board.pieces[loc]:
             location = self.pos_to_screen(piece.loc, distance)
-            pygame.draw.circle(self.display, WOOD if piece.colour == 'w' else BLACK, location, 25)
+            pygame.draw.circle(self.display, WOOD if piece.colour == 'w' else BLACK, location, CIRCLE_RAD)
 
     def highlight_moves(self, available_moves):
         self.available_moves = available_moves
@@ -321,11 +331,19 @@ class GUI:
         if event.button == 1 and self.dice_rolled(event):
             return Action(ActionType.roll)
 
+        elif event.button == 1 and self.captured_piece_selected(event, 'b') and 'source' not in self.extras:
+            self.extras['source'] = 24
+            return Action(ActionType.select, self.extras)
+
+        elif event.button == 1 and self.captured_piece_selected(event, 'w') and 'source' not in self.extras:
+            self.extras['source'] = 25
+            return Action(ActionType.select, self.extras)
+
         elif event.button == 1 and self.piece_selected(index, event) and 'source' not in self.extras:
-            self.extras['source'] = self.screen_to_pos(event)
+            self.extras['source'] = index
             return Action(ActionType.select, self.extras)
 
         elif event.button == 1:
             if 'source' in self.extras:
-                self.extras['destination'] = self.screen_to_pos(event)
+                self.extras['destination'] = index
             return Action(ActionType.move, self.extras)

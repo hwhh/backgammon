@@ -31,8 +31,6 @@ class Game:
         self.state = State(StateType.init)
 
     def transition_function(self, state, action):
-        # TODO if selected and invalid move, go back to not selected
-
         # (Initial state)
         if state.type == StateType.init and action.type == ActionType.roll:
             logging.info("State = Init and Action = Roll")
@@ -58,20 +56,25 @@ class Game:
             logging.info("State = Not Rolled and Action = Roll")
             self.roll_dice()
             available_moves = self.board.get_all_available_moves(self.turn, self.current_die[:2])
+            self.update_front_end([(self.front_end.display_dice, [self.current_die[0], self.current_die[1]])])
             if len(available_moves) == 0:
                 self.change_turn()
+
                 return State(StateType.not_rolled)
-            self.update_front_end([(self.front_end.display_dice, [self.current_die[0], self.current_die[1]])])
             return State(StateType.rolled)
 
-        # args[0] = piece TODO fix displaying available moves
         if state.type == StateType.rolled and action.type == ActionType.select:
             logging.info("State = Rolled and Action = Select")
-
-            source = action.extras[0]['source']  # TODO this is not correct
-
-            piece = self.board.pieces[source][-1]
-            if piece.colour == self.turn:
+            source = action.extras[0]['source']
+            piece = None
+            if source == 24:  # black trying to bear on
+                piece = self.board.black_captured[-1]
+            elif source == 25:  # white trying to bear on
+                piece = self.board.white_captured[-1]
+            elif (len(self.board.white_captured) == 0 and self.turn == 'w') or (
+                    len(self.board.black_captured) == 0 and self.turn == 'b'):
+                piece = self.board.pieces[source][-1]
+            if piece is not None and piece.colour == self.turn:
                 logging.info("\t\tPiece selected: " + str(piece.loc))
                 available_moves = self.board.get_available_moves(piece, self.current_die)
                 self.update_front_end([(self.front_end.highlight_piece, [piece]),
@@ -113,7 +116,6 @@ class Game:
                     self.update_front_end([(self.front_end.draw_captured, [next_state.extras[0]])])
 
                 self.history.append(self.board.copy())
-
                 self.update_front_end([(self.front_end.update_piece, [piece, old_loc]),
                                        (self.front_end.clear_extras, []),
                                        (self.front_end.remove_highlight_moves, [])])
