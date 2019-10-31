@@ -5,6 +5,12 @@ from BackEnd.Game import Game
 from BackEnd.Player import Player
 from FrontEnd.GUI import GUI
 
+# 24 = black captured loc
+# 25 = white captured loc
+
+# 26 = black bear off loc
+# 27 = white bear off loc
+
 if __name__ == '__main__':
     e = threading.Event()
     gui = GUI()

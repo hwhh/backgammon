@@ -7,7 +7,6 @@ class Player:
         self.colour = colour
         self.event = threading.Event()
         self.action = None
-        # self.front_end = front_end
 
     def set_action(self, action):
         self.action = action
@@ -22,11 +21,4 @@ class Player:
     def get_colour(self):
         return self.colour
 
-    def roll_dice(self):
-        pass
 
-    def bear_off(self):
-        pass
-
-    def move(self):
-        pass

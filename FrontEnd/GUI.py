@@ -11,6 +11,10 @@ FONT_SIZE = 25
 CIRCLE_RAD = 25
 CIRCLE_DIAM = CIRCLE_RAD * 2
 BOARDER_WIDTH = 28
+
+BEAR_OFF_WIDTH = 75
+BEAR_OFF_HEIGHT = 335
+
 HOME_WIDTH = 111
 BAR_WIDTH = 53
 SPIKE_WIDTH = 90
@@ -104,7 +108,16 @@ class GUI:
 
     @staticmethod
     def dice_rolled(event):
+        # TODO using magic numbers...
         return 575 <= event.pos[0] <= 622 and 790 <= event.pos[1] <= 820
+
+    @staticmethod
+    def bear_off(colour, event):
+        # TODO using magic numbers...
+        if colour == 'b':
+            return 1188 <= event.pos[0] <= 1260 and 40 <= event.pos[1] <= 375
+        elif colour == 'w':
+            return 1188 <= event.pos[0] <= 1260 and 454 <= event.pos[1] <= 792
 
     def calculate_spacing(self, x):
         if x <= QUAD_4:
@@ -327,7 +340,7 @@ class GUI:
                         pass
 
                 if event.type == pygame.QUIT:
-                    self.action = ActionType.quit
+                    self.players[1].set_action(Action(ActionType.quit))  # dose not matter who roles first
                     running = False
 
     def create_action(self, event):

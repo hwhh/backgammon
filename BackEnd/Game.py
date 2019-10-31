@@ -62,13 +62,12 @@ class Game:
             if len(available_moves) == 0:
                 # TODO display no moves
                 logging.info("\t\tNo more available moves - switching turn")
-
                 self.change_turn()
                 self.current_die = []
                 self.update_front_end([(self.front_end.clear_extras, [])])
 
                 return State(StateType.not_rolled)
-            return State(StateType.rolled)
+            return State(StateType.rolled, available_moves)
 
         if state.type == StateType.rolled and action.type == ActionType.select:
             logging.info("State = Rolled and Action = Select")
@@ -84,9 +83,10 @@ class Game:
             if piece is not None and piece.colour == self.turn:
                 logging.info("\t\tPiece selected: " + str(piece.loc))
                 available_moves = self.board.get_available_moves(piece, self.current_die)
-                self.update_front_end([(self.front_end.highlight_piece, [piece]),
-                                       (self.front_end.highlight_moves, [available_moves])])
-                return State(StateType.selected)
+                if len(state.extras) == 0 or (len(state.extras) > 0 and set(available_moves).issubset(set(state.extras[0]))):
+                    self.update_front_end([(self.front_end.highlight_piece, [piece]),
+                                           (self.front_end.highlight_moves, [available_moves])])
+                    return State(StateType.selected)
             else:
                 self.front_end.clear_extras()
 
