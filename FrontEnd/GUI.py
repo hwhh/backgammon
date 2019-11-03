@@ -14,7 +14,8 @@ BOARDER_WIDTH = 28
 
 BEAR_OFF_WIDTH = 75
 BEAR_OFF_HEIGHT = 335
-
+BLACK_BARE_OFF = 26
+WHITE_BARE_OFF = 27
 HOME_WIDTH = 111
 BAR_WIDTH = 53
 SPIKE_WIDTH = 90
@@ -112,7 +113,7 @@ class GUI:
         return 575 <= event.pos[0] <= 622 and 790 <= event.pos[1] <= 820
 
     @staticmethod
-    def bear_off(colour, event):
+    def home_selected(colour, event):
         # TODO using magic numbers...
         if colour == 'b':
             return 1188 <= event.pos[0] <= 1260 and 40 <= event.pos[1] <= 375
@@ -263,50 +264,62 @@ class GUI:
 
     def update_row(self, loc):
         x, y = self.pos_to_screen((loc, 0), 0)
-        if loc <= QUAD_1 or loc >= QUAD_3:  # TODO what is this ?
-            x = x + 2
-
-        distance = self.calculate_spacing(loc)
-        height = max((len(self.board.pieces[loc] * distance) + CIRCLE_DIAM), (TRIANGLE_HEIGHT + 27))  # 27 = padding
-
-        if loc <= 11:  # Bottom half
-            self.display.blit(self.background,
-                              (x - (TRIANGLE_WIDTH // 2) - 3,
-                               y - (height - (CIRCLE_DIAM - BOARDER_WIDTH) - TRIANGLE_OUTLINE - 2)),
-                              [x - (TRIANGLE_WIDTH // 2) - 3,
-                               y - (height - (CIRCLE_DIAM - BOARDER_WIDTH) - TRIANGLE_OUTLINE - 2),
-                               TRIANGLE_WIDTH + TRIANGLE_OUTLINE + 3, height])
-        else:  # Top half
-            self.display.blit(self.background,
-                              (x - (TRIANGLE_WIDTH // 2) - 3, y - (CIRCLE_DIAM - BOARDER_WIDTH) - TRIANGLE_OUTLINE - 1),
-                              [x - (TRIANGLE_WIDTH // 2) - 3, y - (CIRCLE_DIAM - BOARDER_WIDTH) - TRIANGLE_OUTLINE - 1,
-                               TRIANGLE_WIDTH + TRIANGLE_OUTLINE + 3, height])
-
-        for piece in self.board.pieces[loc]:
-            location = self.pos_to_screen(piece.loc, distance)
-            pygame.draw.circle(self.display, WOOD if piece.colour == 'w' else BLACK, location, CIRCLE_RAD)
+        # TODO using magic numbers...
+        if loc == 26:
+            self.display.blit(self.background, (1180, 30), [1180, 30, 85, 350])
+            pygame.display.flip()
+        elif loc == 27:
+            self.display.blit(self.background, (1180, 450), [1180, 450, 85, 350])
+            pygame.display.flip()
+        else:
+            if loc <= QUAD_1 or loc >= QUAD_3:  # TODO what is this ?
+                x = x + 2
+            distance = self.calculate_spacing(loc)
+            height = max((len(self.board.pieces[loc] * distance) + CIRCLE_DIAM), (TRIANGLE_HEIGHT + 27))  # 27 = padding
+            if loc <= 11:  # Bottom half
+                self.display.blit(self.background,
+                                  (x - (TRIANGLE_WIDTH // 2) - 3,
+                                   y - (height - (CIRCLE_DIAM - BOARDER_WIDTH) - TRIANGLE_OUTLINE - 2)),
+                                  [x - (TRIANGLE_WIDTH // 2) - 3,
+                                   y - (height - (CIRCLE_DIAM - BOARDER_WIDTH) - TRIANGLE_OUTLINE - 2),
+                                   TRIANGLE_WIDTH + TRIANGLE_OUTLINE + 3, height])
+            else:  # Top half
+                self.display.blit(self.background,
+                                  (x - (TRIANGLE_WIDTH // 2) - 3,
+                                   y - (CIRCLE_DIAM - BOARDER_WIDTH) - TRIANGLE_OUTLINE - 1),
+                                  [x - (TRIANGLE_WIDTH // 2) - 3,
+                                   y - (CIRCLE_DIAM - BOARDER_WIDTH) - TRIANGLE_OUTLINE - 1,
+                                   TRIANGLE_WIDTH + TRIANGLE_OUTLINE + 3, height])
+            for piece in self.board.pieces[loc]:
+                location = self.pos_to_screen(piece.loc, distance)
+                pygame.draw.circle(self.display, WOOD if piece.colour == 'w' else BLACK, location, CIRCLE_RAD)
 
     def highlight_moves(self, available_moves):
         self.available_moves = available_moves
         rects = []
         for move in self.available_moves:
-            x, y = self.pos_to_screen((move, 0), 0)
+            # TODO using magic numbers...
 
-            if move <= 5 or move >= 18:
-                x = x + 2
-
-            if move <= 11:  # Bottom half
-                rect = pygame.draw.polygon(self.display, GREEN,
-                                           [(x - (TRIANGLE_WIDTH // 2), y + BOARDER_WIDTH - TRIANGLE_OUTLINE),
-                                            (x + (TRIANGLE_WIDTH // 2), y + BOARDER_WIDTH - TRIANGLE_OUTLINE),
-                                            (x, y - TRIANGLE_HEIGHT)], TRIANGLE_OUTLINE)
-            else:  # Top half
-                rect = pygame.draw.polygon(self.display, GREEN,
-                                           [(x - (TRIANGLE_WIDTH // 2),
-                                             y - (CIRCLE_DIAM - BOARDER_WIDTH + TRIANGLE_OUTLINE)),
-                                            (x + (TRIANGLE_WIDTH // 2),
-                                             y - (CIRCLE_DIAM - BOARDER_WIDTH + TRIANGLE_OUTLINE)),
-                                            (x, y + TRIANGLE_HEIGHT)], TRIANGLE_OUTLINE)
+            if move == 26:
+                rect = pygame.draw.rect(self.display, GREEN, [1188, 35, 72, 340], 3)
+            elif move == 27:
+                rect = pygame.draw.rect(self.display, GREEN, [1188, 454, 72, 335], 3)
+            else:
+                x, y = self.pos_to_screen((move, 0), 0)
+                if move <= 5 or move >= 18:
+                    x = x + 2
+                if move <= 11:  # Bottom half
+                    rect = pygame.draw.polygon(self.display, GREEN,
+                                               [(x - (TRIANGLE_WIDTH // 2), y + BOARDER_WIDTH - TRIANGLE_OUTLINE),
+                                                (x + (TRIANGLE_WIDTH // 2), y + BOARDER_WIDTH - TRIANGLE_OUTLINE),
+                                                (x, y - TRIANGLE_HEIGHT)], TRIANGLE_OUTLINE)
+                else:  # Top half
+                    rect = pygame.draw.polygon(self.display, GREEN,
+                                               [(x - (TRIANGLE_WIDTH // 2),
+                                                 y - (CIRCLE_DIAM - BOARDER_WIDTH + TRIANGLE_OUTLINE)),
+                                                (x + (TRIANGLE_WIDTH // 2),
+                                                 y - (CIRCLE_DIAM - BOARDER_WIDTH + TRIANGLE_OUTLINE)),
+                                                (x, y + TRIANGLE_HEIGHT)], TRIANGLE_OUTLINE)
             rects.append(rect)
         pygame.display.update(rects)
 
