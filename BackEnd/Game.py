@@ -36,21 +36,21 @@ class Game:
         if state.type == StateType.init and action.type == ActionType.roll:
             logging.info("State = Init and Action = Roll")
             self.roll_dice()
-            while self.current_die[0] == self.current_die[1]:
-                self.roll_dice()
+            # while self.current_die[0] == self.current_die[1]:
+            #     self.roll_dice()
 
             self.update_front_end([(self.front_end.display_dice, [self.current_die[0], self.current_die[1]])])
 
-            if self.current_die[0] > self.current_die[1]:
-                logging.info("\t\t White goes first")
-                self.turn = 'w'
-                self.update_front_end([(self.front_end.display_turn, [self.turn])])
-                return State(StateType.rolled)
-            elif self.current_die[0] < self.current_die[1]:
-                logging.info("\t\t Black goes first")
-                self.turn = 'b'
-                self.update_front_end([(self.front_end.display_turn, [self.turn])])
-                return State(StateType.rolled)
+            # if self.current_die[0] > self.current_die[1]:
+            logging.info("\t\t White goes first")
+            self.turn = 'w'
+            self.update_front_end([(self.front_end.display_turn, [self.turn])])
+            return State(StateType.rolled)
+            # elif self.current_die[0] < self.current_die[1]:
+            #     logging.info("\t\t Black goes first")
+            #     self.turn = 'b'
+            #     self.update_front_end([(self.front_end.display_turn, [self.turn])])
+            #     return State(StateType.rolled)
 
         # State rolling dice need to return the dice
         if state.type == StateType.not_rolled and action.type == ActionType.roll:
@@ -64,7 +64,8 @@ class Game:
                 logging.info("\t\tNo more available moves - switching turn")
                 self.change_turn()
                 self.current_die = []
-                self.update_front_end([(self.front_end.clear_extras, [])])
+                self.update_front_end([(self.front_end.clear_extras, []),
+                                       (self.front_end.clear_dice, [])])
 
                 return State(StateType.not_rolled)
             return State(StateType.rolled, available_moves)
@@ -83,7 +84,8 @@ class Game:
             if piece is not None and piece.colour == self.turn:
                 logging.info("\t\tPiece selected: " + str(piece.loc))
                 available_moves = self.board.get_available_moves(piece, self.current_die)
-                if len(state.extras) == 0 or (len(state.extras) > 0 and set(available_moves).issubset(set(state.extras[0]))):
+                if len(state.extras) == 0 or (
+                        len(state.extras) > 0 and set(available_moves).issubset(set(state.extras[0]))):
                     self.update_front_end([(self.front_end.highlight_piece, [piece]),
                                            (self.front_end.highlight_moves, [available_moves])])
                     return State(StateType.selected)
@@ -140,7 +142,7 @@ class Game:
                 if len(self.current_die) == 0 or not self.moves_available():
                     self.change_turn()
                     logging.info("\t\tChanged turn to: " + str(self.turn))
-                    self.front_end.clear_dice()
+                    self.update_front_end([(self.front_end.clear_dice, [])])
                     return State(StateType.not_rolled)
                 else:
 
@@ -188,8 +190,9 @@ class Game:
         self.update_front_end([(self.front_end.display_turn, [self.turn])])
 
     def roll_dice(self):
-        die = (random.randint(1, 6), random.randint(1, 6))
+        die = 2, 2 # (random.randint(1, 6), random.randint(1, 6))
         self.current_die = [die[0], die[1]]
+
         if die[0] == die[1]:
             self.current_die.extend([die[0], die[1]])
             self.doubles = True
