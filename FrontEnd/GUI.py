@@ -30,7 +30,7 @@ QUAD_1 = 5
 QUAD_2 = 11
 QUAD_3 = 17
 QUAD_4 = 23
-
+RIGHT_BOARDER_WIDTH = 35
 DICE_WIDTH = 40
 DICE_HEIGHT = DICE_WIDTH
 DICE1_X = ((BOARD_WIDTH - (HOME_WIDTH + BOARDER_WIDTH)) // 2) - ((DICE_WIDTH + 3) // 2)
@@ -66,7 +66,13 @@ class GUI:
 
     @staticmethod
     def pos_to_screen(board_location, distance):
-        if board_location[0] == 24:  # black captured
+        if board_location[0] == 26:  # black home
+            x = (BOARD_WIDTH - (RIGHT_BOARDER_WIDTH + CIRCLE_DIAM))
+            y = (((BOARD_HEIGHT - BOARDER_WIDTH) // 2) - 35) - ((board_location[1] + 1) * 20)
+        elif board_location[0] == 27:  # white home
+            x = (BOARD_WIDTH - (RIGHT_BOARDER_WIDTH + CIRCLE_DIAM))
+            y = (((BOARD_HEIGHT - BOARDER_WIDTH) // 2) + 35) + ((board_location[1] + 1) * 20)
+        elif board_location[0] == 24:  # black captured
             x = ((BOARD_WIDTH - (HOME_WIDTH + BOARDER_WIDTH)) // 2) + (CIRCLE_RAD + 3)
             y = ((BOARD_HEIGHT - BOARDER_WIDTH) // 2) - ((board_location[1] + 1) * CIRCLE_DIAM)
         elif board_location[0] == 25:  # white  captured
@@ -85,9 +91,9 @@ class GUI:
             x = abs((abs(board_location[0] - 23) * SPIKE_WIDTH) - RIGHT_HALF)
             y = ((CIRCLE_RAD + BOARDER_WIDTH) + (distance * (board_location[1])))
 
-        if board_location[0] <= 11 and y < (BOARD_HEIGHT / 2) + CIRCLE_RAD and board_location[0] == 24:
+        if board_location[0] <= 11 and y < (BOARD_HEIGHT / 2) + CIRCLE_RAD and not board_location[0] >= 24:
             y = (BOARD_HEIGHT // 2) + CIRCLE_RAD
-        if board_location[0] > 11 and y > (BOARD_HEIGHT / 2) - CIRCLE_RAD and board_location[0] != 25:
+        if board_location[0] > 11 and y > (BOARD_HEIGHT / 2) - CIRCLE_RAD and not board_location[0] >= 25:
             y = (BOARD_HEIGHT // 2) - CIRCLE_RAD
         return x, y
 
@@ -113,7 +119,7 @@ class GUI:
         return 575 <= event.pos[0] <= 622 and 790 <= event.pos[1] <= 820
 
     @staticmethod
-    def home_selected(colour, event):
+    def home_selected(event, colour):
         # TODO using magic numbers...
         if colour == 'b':
             return 1188 <= event.pos[0] <= 1260 and 40 <= event.pos[1] <= 375
@@ -254,11 +260,18 @@ class GUI:
             self.display.blit(self.background, (location[0] - CIRCLE_RAD, location[1] - CIRCLE_RAD),
                               [location[0] - CIRCLE_RAD, location[1] - CIRCLE_RAD, CIRCLE_DIAM, CIRCLE_DIAM])
         # Update new row
-        if len(self.board.pieces[piece.loc[0]]) >= 7:
-            self.update_row(piece.loc[0])
+        if piece.loc[0] == 26:
+            location = self.pos_to_screen(piece.loc, 0)
+            pygame.draw.ellipse(self.display, BLACK, [location[0], location[1], 60, 30])
+        elif piece.loc[0] == 27:
+            location = self.pos_to_screen(piece.loc, 0)
+            pygame.draw.ellipse(self.display, WOOD, [location[0], location[1], 60, 30])
         else:
-            location = self.pos_to_screen(piece.loc, self.calculate_spacing(piece.loc[0]))
-            pygame.draw.circle(self.display, WOOD if piece.colour == 'w' else BLACK, location, CIRCLE_RAD)
+            if len(self.board.pieces[piece.loc[0]]) >= 7:
+                self.update_row(piece.loc[0])
+            else:
+                location = self.pos_to_screen(piece.loc, self.calculate_spacing(piece.loc[0]))
+                pygame.draw.circle(self.display, WOOD if piece.colour == 'w' else BLACK, location, CIRCLE_RAD)
 
         pygame.display.flip()
 
@@ -267,10 +280,14 @@ class GUI:
         # TODO using magic numbers...
         if loc == 26:
             self.display.blit(self.background, (1180, 30), [1180, 30, 85, 350])
-            pygame.display.flip()
+            for piece in self.board.black_bared_off:
+                location = self.pos_to_screen(piece.loc, 0)
+                pygame.draw.ellipse(self.display, BLACK, [location[0], location[1], 60, 30])
         elif loc == 27:
             self.display.blit(self.background, (1180, 450), [1180, 450, 85, 350])
-            pygame.display.flip()
+            for piece in self.board.white_bared_off:
+                location = self.pos_to_screen(piece.loc, 0)
+                pygame.draw.ellipse(self.display, WOOD, [location[0], location[1], 60, 30])
         else:
             if loc <= QUAD_1 or loc >= QUAD_3:  # TODO what is this ?
                 x = x + 2
@@ -372,6 +389,16 @@ class GUI:
         elif event.button == 1 and self.piece_selected(index, event) and 'source' not in self.extras:
             self.extras['source'] = index
             return Action(ActionType.select, self.extras)
+
+        elif event.button == 1 and self.home_selected(event, 'b'):
+            if 'source' in self.extras:
+                self.extras['destination'] = 26
+            return Action(ActionType.move, self.extras)
+
+        elif event.button == 1 and self.home_selected(event, 'w'):
+            if 'source' in self.extras:
+                self.extras['destination'] = 27
+            return Action(ActionType.move, self.extras)
 
         elif event.button == 1:
             if 'source' in self.extras:

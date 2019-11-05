@@ -14,9 +14,9 @@ class Board:
     def __init__(self):
         self.pieces = [[] for _ in range(24)]
 
-        self.black_bared_off = 0
+        self.black_bared_off = []
         self.black_captured = []
-        self.white_bared_off = 0
+        self.white_bared_off = []
         self.white_captured = []
         self.initialise_board()
 
@@ -67,27 +67,31 @@ class Board:
 
     def move(self, piece, destination):
         state = State(StateType.moved)
-
-        if destination == 26 or destination == 27:
-            pass
-        elif len(self.pieces[destination]) > 0:
-            if self.pieces[destination][-1].colour != piece.colour:
-                self.pieces[destination][-1].captured = True
-                state = State(StateType.captured, self.pieces[destination][-1])
-                if self.pieces[destination][-1].colour == 'b':
-                    self.pieces[destination][-1].loc = (24, len(self.black_captured))
-                    self.black_captured.append(self.pieces[destination].pop())
-                elif self.pieces[destination][-1].colour == 'w':
-                    self.pieces[destination][-1].loc = (25, len(self.white_captured))
-                    self.white_captured.append(self.pieces[destination].pop())
-        if piece.loc[0] == 24:
-            self.pieces[destination].append(self.black_captured.pop())
-        elif piece.loc[0] == 25:
-            self.pieces[destination].append(self.white_captured.pop())
+        if destination == 26:
+            self.black_bared_off.append(self.pieces[piece.loc[0]].pop())
+            piece.move((destination, len(self.black_bared_off) - 1))
+        elif destination == 27:
+            self.white_bared_off.append(self.pieces[piece.loc[0]].pop())
+            piece.move((destination, len(self.white_bared_off) - 1))
         else:
-            self.pieces[destination].append(self.pieces[piece.loc[0]].pop())
+            if len(self.pieces[destination]) > 0:
+                if self.pieces[destination][-1].colour != piece.colour:
+                    self.pieces[destination][-1].captured = True
+                    state = State(StateType.captured, self.pieces[destination][-1])
+                    if self.pieces[destination][-1].colour == 'b':
+                        self.pieces[destination][-1].loc = (24, len(self.black_captured))
+                        self.black_captured.append(self.pieces[destination].pop())
+                    elif self.pieces[destination][-1].colour == 'w':
+                        self.pieces[destination][-1].loc = (25, len(self.white_captured))
+                        self.white_captured.append(self.pieces[destination].pop())
+            if piece.loc[0] == 24:
+                self.pieces[destination].append(self.black_captured.pop())
+            elif piece.loc[0] == 25:
+                self.pieces[destination].append(self.white_captured.pop())
+            else:
+                self.pieces[destination].append(self.pieces[piece.loc[0]].pop())
 
-        piece.move((destination, len(self.pieces[destination]) - 1))
+            piece.move((destination, len(self.pieces[destination]) - 1))
         return state
 
     @staticmethod

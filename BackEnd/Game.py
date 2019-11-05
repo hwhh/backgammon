@@ -101,10 +101,8 @@ class Game:
 
         if state.type == StateType.selected and action.type == ActionType.move:
             logging.info("State = Selected and Action = Move")
-
             source = action.extras[0]['source']
             destination = action.extras[0]['destination']
-
             if source == 24:
                 piece = self.board.black_captured[-1]
                 source = -1
@@ -116,7 +114,12 @@ class Game:
 
             available_moves = self.board.get_available_moves(piece, self.current_die)
             if piece.colour == self.turn and destination in available_moves:
-                move = abs(source - destination)
+                if destination == 26:
+                    move = abs(source - 24)
+                elif destination == 27:
+                    move = abs(source - (-1))
+                else:
+                    move = abs(source - destination)
                 logging.info("\t\tMove was: " + str(move))
                 if move in self.current_die:
                     self.current_die.remove(move)
@@ -190,7 +193,7 @@ class Game:
         self.update_front_end([(self.front_end.display_turn, [self.turn])])
 
     def roll_dice(self):
-        die = 2, 2 # (random.randint(1, 6), random.randint(1, 6))
+        die = 2, 2  # (random.randint(1, 6), random.randint(1, 6))
         self.current_die = [die[0], die[1]]
 
         if die[0] == die[1]:
