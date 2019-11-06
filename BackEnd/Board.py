@@ -22,24 +22,15 @@ class Board:
 
     def initialise_board(self):
         pieces = []
-        # pieces.extend([Piece(loc, 'w') for loc in zip([23] * 2, range(2))])
-        # pieces.extend([Piece(loc, 'b') for loc in zip([0] * 2, range(2))])
-        #
-        # pieces.extend([Piece(loc, 'w') for loc in zip([5] * 5, range(5))])
-        # pieces.extend([Piece(loc, 'b') for loc in zip([18] * 5, range(5))])
-        # pieces.extend([Piece(loc, 'b') for loc in zip([16] * 3, range(3))])
-        # pieces.extend([Piece(loc, 'w') for loc in zip([7] * 3, range(3))])
-        # pieces.extend([Piece(loc, 'b') for loc in zip([11] * 5, range(5))])
-        # pieces.extend([Piece(loc, 'w') for loc in zip([12] * 5, range(5))])
-        # pieces.extend([Piece(loc, 'w') for loc in zip([0] * 2, range(2))])
-        # pieces.extend([Piece(loc, 'w') for loc in zip([1] * 5, range(5))])
-        pieces.extend([Piece(loc, 'w') for loc in zip([2] * 3, range(3))])
+        pieces.extend([Piece(loc, 'w') for loc in zip([23] * 2, range(2))])
+        pieces.extend([Piece(loc, 'b') for loc in zip([0] * 2, range(2))])
         pieces.extend([Piece(loc, 'w') for loc in zip([5] * 5, range(5))])
-
-        pieces.extend([Piece(loc, 'b') for loc in zip([23] * 2, range(2))])
-        pieces.extend([Piece(loc, 'b') for loc in zip([22] * 5, range(5))])
-        # pieces.extend([Piece(loc, 'b') for loc in zip([21] * 3, range(3))])
-        # pieces.extend([Piece(loc, 'b') for loc in zip([20] * 5, range(5))])
+        pieces.extend([Piece(loc, 'b') for loc in zip([18] * 5, range(5))])
+        pieces.extend([Piece(loc, 'w') for loc in zip([7] * 3, range(3))])
+        pieces.extend([Piece(loc, 'b') for loc in zip([16] * 3, range(3))])
+        pieces.extend([Piece(loc, 'b') for loc in zip([11] * 5, range(5))])
+        pieces.extend([Piece(loc, 'w') for loc in zip([12] * 5, range(5))])
+        pieces.extend([Piece(loc, 'b') for loc in zip([0] * 2, range(2))])
         for piece in pieces:
             self.pieces[piece.loc[0]].append(piece)
 
@@ -70,9 +61,13 @@ class Board:
         if destination == 26:
             self.black_bared_off.append(self.pieces[piece.loc[0]].pop())
             piece.move((destination, len(self.black_bared_off) - 1))
+            if len(self.black_bared_off) == 15:
+                return State(StateType.black_win)
         elif destination == 27:
             self.white_bared_off.append(self.pieces[piece.loc[0]].pop())
             piece.move((destination, len(self.white_bared_off) - 1))
+            if len(self.white_bared_off) == 15:
+                return State(StateType.white_win)
         else:
             if len(self.pieces[destination]) > 0:
                 if self.pieces[destination][-1].colour != piece.colour:
@@ -184,7 +179,6 @@ class Board:
                         multiple_moves += 1
                         last_index = current_index
                     current_index += 1
-
 
             if multiple_moves == 1 and len(all_available_moves) > 1:
                 return all_available_moves[last_index]

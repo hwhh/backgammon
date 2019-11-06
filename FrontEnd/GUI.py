@@ -249,7 +249,7 @@ class GUI:
 
     def update_piece(self, piece, old_loc):
         # Update old row
-
+        self.selected_piece = None
         if (old_loc[0] == 24 and len(self.board.black_captured) >= 7) or \
                 (old_loc[0] == 25 and len(self.board.white_captured) >= 7):
             self.update_row(old_loc[0])

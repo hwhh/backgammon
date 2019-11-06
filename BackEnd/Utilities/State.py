@@ -10,6 +10,8 @@ class StateType(Enum):
     captured = 5
     bear_on = 6
     bear_off = 7
+    black_win = 8
+    white_win = 9
 
 class State:
 

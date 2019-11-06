@@ -30,27 +30,28 @@ class Game:
         self.current_die = []
         self.update_front_end([(self.front_end.set_board, [self.board])])
         self.state = State(StateType.init)
+        self.or_e = OrEvent(self.player1.event, self.player2.event)
 
     def transition_function(self, state, action):
         # (Initial state)
         if state.type == StateType.init and action.type == ActionType.roll:
             logging.info("State = Init and Action = Roll")
             self.roll_dice()
-            # while self.current_die[0] == self.current_die[1]:
-            #     self.roll_dice()
+            while self.current_die[0] == self.current_die[1]:
+                self.roll_dice()
 
             self.update_front_end([(self.front_end.display_dice, [self.current_die[0], self.current_die[1]])])
 
-            # if self.current_die[0] > self.current_die[1]:
-            logging.info("\t\t White goes first")
-            self.turn = 'w'
-            self.update_front_end([(self.front_end.display_turn, [self.turn])])
-            return State(StateType.rolled)
-            # elif self.current_die[0] < self.current_die[1]:
-            #     logging.info("\t\t Black goes first")
-            #     self.turn = 'b'
-            #     self.update_front_end([(self.front_end.display_turn, [self.turn])])
-            #     return State(StateType.rolled)
+            if self.current_die[0] > self.current_die[1]:
+                logging.info("\t\t White goes first")
+                self.turn = 'w'
+                self.update_front_end([(self.front_end.display_turn, [self.turn])])
+                return State(StateType.rolled)
+            elif self.current_die[0] < self.current_die[1]:
+                logging.info("\t\t Black goes first")
+                self.turn = 'b'
+                self.update_front_end([(self.front_end.display_turn, [self.turn])])
+                return State(StateType.rolled)
 
         # State rolling dice need to return the dice
         if state.type == StateType.not_rolled and action.type == ActionType.roll:
@@ -120,11 +121,15 @@ class Game:
                     move = abs(source - (-1))
                 else:
                     move = abs(source - destination)
+
                 logging.info("\t\tMove was: " + str(move))
                 if move in self.current_die:
                     self.current_die.remove(move)
                 elif self.doubles:
-                    self.current_die = self.current_die[move // self.current_die[0]:]
+                    if self.current_die[0] > move:  #    This is likely a finishing move
+                        self.current_die.pop()
+                    else:
+                        self.current_die = self.current_die[move // self.current_die[0]:]
                 else:
                     self.current_die = []
 
@@ -168,22 +173,27 @@ class Game:
 
     def run(self):
         self.update_front_end([(self.front_end.display_pieces, [])])
-        or_e = OrEvent(self.player1.event, self.player2.event)
         while not self.game_over():
-            or_e.wait()
+            self.or_e.wait()
             if self.turn == self.player1.colour:
                 action = self.player1.get_action()
             else:
                 action = self.player2.get_action()
             if action is not None:
                 self.state = self.transition_function(self.state, action)
-            or_e.clear()
+            self.or_e.clear()
 
     def get_turn(self):
         return self.turn
 
     def game_over(self):
-        return self.board.white_bared_off == 15 or self.board.black_bared_off == 15
+        if len(self.board.black_bared_off) == 5:
+            logging.info('Black wins!')
+            return True
+        if len(self.board.white_bared_off) == 5:
+            logging.info('White wins!')
+            return True
+        return False
 
     def change_turn(self):
         if self.turn == 'w':
@@ -193,9 +203,8 @@ class Game:
         self.update_front_end([(self.front_end.display_turn, [self.turn])])
 
     def roll_dice(self):
-        die = 2, 2  # (random.randint(1, 6), random.randint(1, 6))
+        die = (random.randint(1, 6), random.randint(1, 6))
         self.current_die = [die[0], die[1]]
-
         if die[0] == die[1]:
             self.current_die.extend([die[0], die[1]])
             self.doubles = True
