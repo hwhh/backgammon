@@ -36,7 +36,7 @@ class Board:
     def get_pieces(self):
         return [piece for piece in itertools.chain.from_iterable(self.pieces)]
 
-    def can_bear_off_piece(self, piece, dest, ):
+    def can_bear_off_piece(self, piece, dest):
         if piece.colour == 'b':
             if piece.colour == 'b' and len(self.black_captured) > 0:
                 return False
@@ -108,10 +108,10 @@ class Board:
             get_destinations_for_colour(lambda x, y: (x + y))
         return destinations[0], destinations[1], destinations[2], destinations[3]
 
-    def validate_move(self, piece, dest):
+    def validate_move(self, piece, dest, combo):
         if 0 <= dest <= 23 and (len(self.pieces[dest]) <= 1 or (self.pieces[dest][-1]).colour == piece.colour):
             return True
-        if self.can_bear_off_piece(piece, dest):
+        if combo and self.can_bear_off_piece(piece, dest):
             return True
         return False
 
@@ -128,18 +128,18 @@ class Board:
             available_moves = []
             dest1, dest2, dest3, dest4 = self.get_destinations(piece, dice)
             m1_available, m2_available, m3_available = False, False, False
-            if self.validate_move(piece, dest1, dice):
+            if self.validate_move(piece, dest1, True):
                 m1_available = True
                 available_moves.append(dest1)
-            if dest2 is not None and self.validate_move(piece, dest2, dice):
+            if dest2 is not None and self.validate_move(piece, dest2, True):
                 if len(dice) > 1 and ((dice[0] != dice[1]) or (dice[0] == dice[1] and m1_available)):
                     m2_available = True
                     available_moves.append(dest2)
-            if dest3 is not None and self.validate_move(piece, dest3, dice):
+            if dest3 is not None and self.validate_move(piece, dest3, False):
                 if ((m1_available or m2_available) and dice[0] != dice[1]) or (m1_available and m2_available):
                     available_moves.append(dest3)
                     m3_available = True
-            if dest4 is not None and self.validate_move(piece, dest4, dice):
+            if dest4 is not None and self.validate_move(piece, dest4, False):
                 if m3_available:
                     available_moves.append(dest4)
         return set([27 if x < 0 else 26 if x > 23 else x for x in available_moves])
