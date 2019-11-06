@@ -185,6 +185,7 @@ class Board:
                         last_index = current_index
                     current_index += 1
 
+
             if multiple_moves == 1 and len(all_available_moves) > 1:
                 return all_available_moves[last_index]
             else:
