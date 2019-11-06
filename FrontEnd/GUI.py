@@ -364,11 +364,6 @@ class GUI:
                         else:  # initial roll
                             self.players[1].set_action(self.create_action(event))  # dose not matter who roles first
 
-
-                    # PLayer vs AI - the human player should be player 2
-                    else:
-                        pass
-
                 if event.type == pygame.QUIT:
                     self.players[1].set_action(Action(ActionType.quit))  # dose not matter who roles first
                     running = False
