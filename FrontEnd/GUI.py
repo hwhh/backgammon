@@ -261,11 +261,13 @@ class GUI:
                               [location[0] - CIRCLE_RAD, location[1] - CIRCLE_RAD, CIRCLE_DIAM, CIRCLE_DIAM])
         # Update new row
         if piece.loc[0] == 26:
-            location = self.pos_to_screen(piece.loc, 0)
-            pygame.draw.ellipse(self.display, BLACK, [location[0], location[1], 60, 30])
+            pass
+            # location = self.pos_to_screen(piece.loc, 0)
+            # pygame.draw.ellipse(self.display, BLACK, [location[0], location[1], 60, 30])
         elif piece.loc[0] == 27:
-            location = self.pos_to_screen(piece.loc, 0)
-            pygame.draw.ellipse(self.display, WOOD, [location[0], location[1], 60, 30])
+            pass
+            # location = self.pos_to_screen(piece.loc, 0)
+            # pygame.draw.ellipse(self.display, WOOD, [location[0], location[1], 60, 30])
         else:
             if len(self.board.pieces[piece.loc[0]]) >= 7:
                 self.update_row(piece.loc[0])

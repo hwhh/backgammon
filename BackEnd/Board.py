@@ -31,15 +31,15 @@ class Board:
         # pieces.extend([Piece(loc, 'w') for loc in zip([7] * 3, range(3))])
         # pieces.extend([Piece(loc, 'b') for loc in zip([11] * 5, range(5))])
         # pieces.extend([Piece(loc, 'w') for loc in zip([12] * 5, range(5))])
-        pieces.extend([Piece(loc, 'w') for loc in zip([0] * 2, range(2))])
-        pieces.extend([Piece(loc, 'w') for loc in zip([1] * 5, range(5))])
+        # pieces.extend([Piece(loc, 'w') for loc in zip([0] * 2, range(2))])
+        # pieces.extend([Piece(loc, 'w') for loc in zip([1] * 5, range(5))])
         pieces.extend([Piece(loc, 'w') for loc in zip([2] * 3, range(3))])
         pieces.extend([Piece(loc, 'w') for loc in zip([5] * 5, range(5))])
 
         pieces.extend([Piece(loc, 'b') for loc in zip([23] * 2, range(2))])
         pieces.extend([Piece(loc, 'b') for loc in zip([22] * 5, range(5))])
-        pieces.extend([Piece(loc, 'b') for loc in zip([21] * 3, range(3))])
-        pieces.extend([Piece(loc, 'b') for loc in zip([20] * 5, range(5))])
+        # pieces.extend([Piece(loc, 'b') for loc in zip([21] * 3, range(3))])
+        # pieces.extend([Piece(loc, 'b') for loc in zip([20] * 5, range(5))])
         for piece in pieces:
             self.pieces[piece.loc[0]].append(piece)
 
