@@ -124,7 +124,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-
+.idea/
 .DS_Store
 .idea/.gitignore
 .idea/backgammon.iml
