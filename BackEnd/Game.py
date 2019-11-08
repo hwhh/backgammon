@@ -15,6 +15,8 @@ logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO)
 # TODO you need to make every move, therefore if there is a way to use both die you have to do that
 # TODO BUG - somthing wired happens if rolled doubles when tring to bear on - maybe because there were no available moves
 # TODO Add notification of no available moves
+# TODO make the move then check for available moves
+# TODO Add the board to history before making the move
 class Game:
 
     def __init__(self, front_end, player1, player2):
@@ -45,12 +47,12 @@ class Game:
             if self.current_die[0] > self.current_die[1]:
                 logging.info("\t\t White goes first")
                 self.turn = 'w'
-                self.update_front_end([(self.front_end.display_turn, [self.turn])])
+                self.update_front_end([(self.front_end.display_turn, [self.turn, False])])
                 return State(StateType.rolled)
             elif self.current_die[0] < self.current_die[1]:
                 logging.info("\t\t Black goes first")
                 self.turn = 'b'
-                self.update_front_end([(self.front_end.display_turn, [self.turn])])
+                self.update_front_end([(self.front_end.display_turn, [self.turn, False])])
                 return State(StateType.rolled)
 
         # State rolling dice need to return the dice
@@ -102,40 +104,15 @@ class Game:
 
         if state.type == StateType.selected and action.type == ActionType.move:
             logging.info("State = Selected and Action = Move")
-            source = action.extras[0]['source']
-            destination = action.extras[0]['destination']
-            if source == 24:
-                piece = self.board.black_captured[-1]
-                source = -1
-            elif source == 25:
-                piece = self.board.white_captured[-1]
-                source = 24
-            else:
-                piece = self.board.pieces[source][-1]
-
+            piece, source = self.get_source(action.extras[0]['source'])
+            dest = action.extras[0]['destination']
             available_moves = self.board.get_available_moves(piece, self.current_die)
-            if piece.colour == self.turn and destination in available_moves:
-                if destination == 26:
-                    move = abs(source - 24)
-                elif destination == 27:
-                    move = abs(source - (-1))
-                else:
-                    move = abs(source - destination)
-
+            if piece.colour == self.turn and dest in available_moves:
+                move = abs(source - 24) if dest == 26 else abs(source - (-1)) if dest == 27 else abs(source - dest)
                 logging.info("\t\tMove was: " + str(move))
-                if move in self.current_die:
-                    self.current_die.remove(move)
-                elif self.doubles:
-                    if self.current_die[0] > move:  #    This is likely a finishing move
-                        self.current_die.pop()
-                    else:
-                        self.current_die = self.current_die[move // self.current_die[0]:]
-                else:
-                    self.current_die = []
-
+                self.update_dice(move)
                 old_loc = piece.loc
-                next_state = self.board.move(piece, destination)
-
+                next_state = self.board.move(piece, dest)
                 if next_state.type == StateType.captured:
                     logging.info("\t\t" + str(next_state.extras[0]) + " was captured: ")
                     self.update_front_end([(self.front_end.draw_captured, [next_state.extras[0]])])
@@ -145,8 +122,6 @@ class Game:
                                        (self.front_end.clear_extras, []),
                                        (self.front_end.remove_highlight_moves, [])])
 
-                # TODO make the move then check for available moves
-                # TODO Add the board to history before making the move
                 if len(self.current_die) == 0 or not self.moves_available():
                     self.change_turn()
                     logging.info("\t\tChanged turn to: " + str(self.turn))
@@ -162,6 +137,27 @@ class Game:
             return State(StateType.rolled)
 
         return state
+
+    def get_source(self, source):
+        if source == 24:
+            return self.board.black_captured[-1], -1
+        elif source == 25:
+            return self.board.white_captured[-1], 24
+        else:
+            return self.board.pieces[source][-1], source
+
+    def update_dice(self, move):
+        if move in self.current_die:
+            self.current_die.remove(move)
+        elif self.doubles:
+            if self.current_die[0] > move:  # This is likely a finishing move
+                self.current_die.pop()
+            else:
+                self.current_die = self.current_die[move // self.current_die[0]:]
+        elif len(self.current_die) > 0 and all(die > move for die in self.current_die):
+            self.current_die.pop(self.current_die.index(max(self.current_die)))
+        else:
+            self.current_die = []
 
     def update_front_end(self, funcs):
         if not self.headless:
@@ -187,11 +183,13 @@ class Game:
         return self.turn
 
     def game_over(self):
-        if len(self.board.black_bared_off) == 5:
+        if len(self.board.black_bared_off) == 15:
             logging.info('Black wins!')
+            self.update_front_end([(self.front_end.display_turn, [self.turn, True])])
             return True
-        if len(self.board.white_bared_off) == 5:
+        if len(self.board.white_bared_off) == 15:
             logging.info('White wins!')
+            self.update_front_end([(self.front_end.display_turn, [self.turn, True])])
             return True
         return False
 
@@ -200,7 +198,7 @@ class Game:
             self.turn = 'b'
         else:
             self.turn = 'w'
-        self.update_front_end([(self.front_end.display_turn, [self.turn])])
+        self.update_front_end([(self.front_end.display_turn, [self.turn, False])])
 
     def roll_dice(self):
         die = (random.randint(1, 6), random.randint(1, 6))

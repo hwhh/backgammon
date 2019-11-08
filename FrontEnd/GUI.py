@@ -340,11 +340,12 @@ class GUI:
             rects.append(rect)
         pygame.display.update(rects)
 
-    def display_turn(self, turn):
+    def display_turn(self, turn, win):
         self.display.blit(self.background, (555, 8), [550, 4, 100, 14])
         self.turn = turn
-        turn = 'White\'s Go' if turn == 'w' else 'Black\'s Go'
-        display_turn = pygame.font.SysFont('Arial', FONT_SIZE).render(turn, True, (0, 0, 0))
+        turn = 'White' if turn == 'w' else 'Black'
+        text = ' Wins' if win else '\'s Go'
+        display_turn = pygame.font.SysFont('Arial', FONT_SIZE).render(turn + text, True, (0, 0, 0))
         rect = self.display.blit(display_turn, (555, 8))
         pygame.display.update([rect])
 
