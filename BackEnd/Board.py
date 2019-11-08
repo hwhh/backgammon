@@ -30,6 +30,7 @@ class Board:
         pieces.extend([Piece(loc, 'b') for loc in zip([16] * 3, range(3))])
         pieces.extend([Piece(loc, 'b') for loc in zip([11] * 5, range(5))])
         pieces.extend([Piece(loc, 'w') for loc in zip([12] * 5, range(5))])
+
         for piece in pieces:
             self.pieces[piece.loc[0]].append(piece)
 

@@ -154,7 +154,7 @@ class Game:
                 self.current_die.pop()
             else:
                 self.current_die = self.current_die[move // self.current_die[0]:]
-        elif len(self.current_die) > 0 and all(die > move for die in self.current_die):
+        elif len(self.current_die) > 0 and any(die > move for die in self.current_die):
             self.current_die.pop(self.current_die.index(max(self.current_die)))
         else:
             self.current_die = []
@@ -201,7 +201,7 @@ class Game:
         self.update_front_end([(self.front_end.display_turn, [self.turn, False])])
 
     def roll_dice(self):
-        die = (random.randint(1, 6), random.randint(1, 6))
+        die = 6, 1 #(random.randint(1, 6), random.randint(1, 6))
         self.current_die = [die[0], die[1]]
         if die[0] == die[1]:
             self.current_die.extend([die[0], die[1]])
