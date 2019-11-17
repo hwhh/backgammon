@@ -110,25 +110,31 @@ class Game:
             if piece.colour == self.turn and dest in available_moves:
                 move = abs(source - 24) if dest == 26 else abs(source - (-1)) if dest == 27 else abs(source - dest)
                 logging.info("\t\tMove was: " + str(move))
+                history = {'turn': self.turn,
+                           'board': self.board.copy(),
+                           'dice': self.current_die.copy(),
+                           'moved_piece': piece,
+                           'captured': False
+                           }
+
                 self.update_dice(move)
                 old_loc = piece.loc
                 next_state = self.board.move(piece, dest)
                 if next_state.type == StateType.captured:
                     logging.info("\t\t" + str(next_state.extras[0]) + " was captured: ")
+                    history['captured'] = True
                     self.update_front_end([(self.front_end.draw_captured, [next_state.extras[0]])])
 
-                self.history.append(self.board.copy())
                 self.update_front_end([(self.front_end.update_piece, [piece, old_loc]),
                                        (self.front_end.clear_extras, []),
                                        (self.front_end.remove_highlight_moves, [])])
-
+                self.history.append(history)
                 if len(self.current_die) == 0 or not self.moves_available():
                     self.change_turn()
                     logging.info("\t\tChanged turn to: " + str(self.turn))
                     self.update_front_end([(self.front_end.clear_dice, [])])
                     return State(StateType.not_rolled)
                 else:
-
                     return State(StateType.rolled)
 
             self.update_front_end([(self.front_end.remove_highlight_piece, []),
@@ -179,6 +185,16 @@ class Game:
                 self.state = self.transition_function(self.state, action)
             self.or_e.clear()
 
+    def undo(self):
+        previous_state = self.history.pop()
+        self.current_die = previous_state['dice']
+        self.turn = previous_state['turn']
+        self.board = previous_state['board']
+        self.update_front_end([()])
+        self.update_front_end([(self.front_end.update_piece, [previous_state['piece'], old_loc]),
+                               (self.front_end.clear_extras, []),
+                               (self.front_end.remove_highlight_moves, [])])
+
     def get_turn(self):
         return self.turn
 
@@ -201,7 +217,7 @@ class Game:
         self.update_front_end([(self.front_end.display_turn, [self.turn, False])])
 
     def roll_dice(self):
-        die = 6, 1 #(random.randint(1, 6), random.randint(1, 6))
+        die = 6, 1  # (random.randint(1, 6), random.randint(1, 6))
         self.current_die = [die[0], die[1]]
         if die[0] == die[1]:
             self.current_die.extend([die[0], die[1]])

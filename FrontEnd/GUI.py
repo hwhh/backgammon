@@ -58,10 +58,8 @@ class GUI:
         self.display = pygame.display.set_mode(res)
         self.background = pygame.transform.smoothscale(pygame.image.load('./Assets/board.png').convert(), res)
         rect1 = self.display.blit(self.background, (0, 0))
-
         rect2 = pygame.draw.rect(self.display, WHITE, (575, 795, 47, 25))
         rect3 = self.display.blit(pygame.font.SysFont('Arial', FONT_SIZE).render('Roll', True, (0, 0, 0)), (583, 800))
-
         pygame.display.update([rect1, rect2, rect3])
 
     @staticmethod
