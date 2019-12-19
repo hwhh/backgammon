@@ -43,7 +43,7 @@ class Board:
                 return False
             if dest > 24 and sum([len(x) for x in self.pieces[18:piece.loc[0]]]) > 0:  #
                 return False
-            for row in self.pieces[:19]:
+            for row in self.pieces[:18]:
                 if len(row) > 0 and row[-1].colour == 'b':
                     return False
         if piece.colour == 'w':

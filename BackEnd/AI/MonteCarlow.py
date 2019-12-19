@@ -17,3 +17,6 @@ def model():
                   loss='categorical_crossentropy',
                   metrics=['accuracy'])
     return model
+
+
+

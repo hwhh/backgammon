@@ -217,7 +217,7 @@ class Game:
         self.update_front_end([(self.front_end.display_turn, [self.turn, False])])
 
     def roll_dice(self):
-        die = 6, 1  # (random.randint(1, 6), random.randint(1, 6))
+        die = (random.randint(1, 6), random.randint(1, 6))
         self.current_die = [die[0], die[1]]
         if die[0] == die[1]:
             self.current_die.extend([die[0], die[1]])
